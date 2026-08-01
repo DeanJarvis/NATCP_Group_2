@@ -1,81 +1,71 @@
 <!doctype html>
 <html lang="zh-Hant">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="HoroscopeToday，用幾個簡單問題整理今天的心情。" />
-    <title>HoroscopeToday｜今日星語</title>
-    <link rel="stylesheet" href="style.css" />
-    <script src="script.js" defer></script>
-  </head>
-  <body>
-    <div class="ambient ambient-one" aria-hidden="true"></div>
-    <div class="ambient ambient-two" aria-hidden="true"></div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HoroscopeToday，用三個問題讀懂此刻的自己。">
+  <title>HoroscopeToday｜今日星語</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+  <main class="app-shell">
+    <header class="brand" aria-label="HoroscopeToday"><span class="brand-mark" aria-hidden="true">✦</span><span>HoroscopeToday</span></header>
 
-    <main class="app-shell">
-      <header class="brand" aria-label="HoroscopeToday">
-        <span class="brand-mark" aria-hidden="true">✦</span>
-        <span>HoroscopeToday</span>
-      </header>
+    <section class="screen is-active hero" id="home-screen" aria-labelledby="home-title">
+      <p class="eyebrow">A LITTLE NOTE FROM THE STARS</p>
+      <h1 id="home-title" tabindex="-1">讓星光，陪你讀懂<br>今天的自己。</h1>
+      <p class="lead">選一個屬於你的星座，回答三個小問題，<br>收下一封為此刻而寫的今日星語。</p>
+      <button class="primary-button" id="start-button" type="button">開始今日探索 <span>→</span></button>
+      <p class="time-note">大約需要 1 分鐘</p>
+    </section>
 
-      <section class="screen is-active hero" id="home-screen" aria-labelledby="home-title">
-        <p class="eyebrow">A LITTLE NOTE FROM THE STARS</p>
-        <h1 id="home-title">讓星光，陪你讀懂<br />今天的自己。</h1>
-        <p class="lead">選一個屬於你的星座，回答幾個小問題，<br />收下一封為此刻而寫的今日星語。</p>
-        <button class="primary-button" id="start-button" type="button">開始今日探索 <span>→</span></button>
-        <p class="time-note">大約需要 1 分鐘</p>
-      </section>
+    <section class="screen" id="zodiac-screen" aria-labelledby="zodiac-title">
+      <div class="step-meta"><span>01</span><span>選擇你的星座</span></div>
+      <h2 id="zodiac-title" tabindex="-1">你是哪一個星座？</h2>
+      <p class="section-copy">從十二星座中選出最熟悉的那一個。</p>
+      <div class="zodiac-grid" id="zodiac-grid" role="radiogroup" aria-label="十二星座"></div>
+      <div class="actions"><button class="primary-button" id="zodiac-next" type="button" disabled>繼續 <span>→</span></button></div>
+    </section>
 
-      <section class="screen" id="zodiac-screen" aria-labelledby="zodiac-title">
-        <div class="step-meta"><span>01</span><span>選擇你的星座</span></div>
-        <h2 id="zodiac-title">你是哪一個星座？</h2>
-        <p class="section-copy">從十二星座中選出最熟悉的那一個。</p>
-        <div class="zodiac-grid" id="zodiac-grid" role="radiogroup" aria-label="十二星座"></div>
-        <div class="actions"><button class="primary-button" id="zodiac-next" type="button" disabled>繼續 <span>→</span></button></div>
-      </section>
-
-      <section class="screen" id="quiz-screen" aria-labelledby="question-title">
-        <div class="progress-row">
-          <div class="step-meta"><span id="question-number">02</span><span>讀一讀此刻的你</span></div>
-          <span class="progress-label" id="progress-label">1 / 3</span>
-        </div>
-        <div class="progress-track" aria-hidden="true"><span id="progress-bar"></span></div>
-        <h2 id="question-title"></h2>
+    <section class="screen" id="quiz-screen" aria-labelledby="question-title">
+      <div class="progress-row"><div class="step-meta"><span>02</span><span>讀一讀此刻的你</span></div><span class="progress-label" id="progress-label">1 / 3</span></div>
+      <div class="progress-track" aria-hidden="true"><span id="progress-bar"></span></div>
+      <div class="question-panel" id="question-panel">
+        <h2 id="question-title" tabindex="-1"></h2>
         <p class="section-copy" id="question-hint"></p>
         <div class="answer-list" id="answer-list" role="radiogroup"></div>
-        <div class="actions split">
-          <button class="text-button" id="quiz-back" type="button">← 上一步</button>
-          <button class="primary-button" id="quiz-next" type="button" disabled>下一題 <span>→</span></button>
-        </div>
-      </section>
+      </div>
+      <div class="actions split"><button class="text-button" id="quiz-back" type="button">← 上一步</button><button class="primary-button" id="quiz-next" type="button" disabled>下一題 <span>→</span></button></div>
+    </section>
 
-      <section class="screen" id="mood-screen" aria-labelledby="mood-title">
-        <div class="step-meta"><span>05</span><span>留下今天的心情</span></div>
-        <h2 id="mood-title">此刻，你最想說什麼？</h2>
-        <p class="section-copy">不需要整理得很完美，寫下一句真實的感受就好。</p>
-        <label class="mood-field">
-          <span class="sr-only">今日心情</span>
-          <textarea id="mood-input" maxlength="160" placeholder="例如：今天有點累，但也期待某件小事發生……"></textarea>
-          <span class="char-count"><span id="char-count">0</span> / 160</span>
-        </label>
-        <div class="actions split">
-          <button class="text-button" id="mood-back" type="button">← 上一步</button>
-          <button class="primary-button" id="mood-submit" type="button">收下今日星語 <span>✦</span></button>
-        </div>
-      </section>
+    <section class="screen" id="mood-screen" aria-labelledby="mood-title">
+      <div class="step-meta"><span>05</span><span>留下今天的心情</span></div>
+      <h2 id="mood-title" tabindex="-1">此刻，你最想說什麼？</h2>
+      <p class="section-copy">可以留白，也可以寫下一句最真實的感受。</p>
+      <label class="mood-field"><span class="sr-only">今日心情</span><textarea id="mood-input" maxlength="300" placeholder="例如：今天有點累，但也期待某件小事發生……"></textarea><span class="char-count"><span id="char-count">0</span> / 300</span></label>
+      <div class="actions split"><button class="text-button" id="mood-back" type="button">← 上一步</button><button class="primary-button" id="mood-submit" type="button">生成今日星語 <span>✦</span></button></div>
+    </section>
 
-      <section class="screen result" id="result-screen" aria-labelledby="result-title">
-        <div class="result-symbol" aria-hidden="true">☾</div>
-        <p class="eyebrow">YOUR MESSAGE FOR TODAY</p>
-        <h2 id="result-title">你的今日星語已準備好</h2>
-        <div class="letter">
-          <p class="letter-to" id="letter-to">給今天的你：</p>
-          <p>你已經花了一點時間，安靜地看見自己的感受。</p>
-          <p>真正的星語生成會在下一個版本加入；現在，先把這份覺察留在身邊，允許今天按照自己的步調發生。</p>
-          <p class="letter-sign">— HoroscopeToday</p>
-        </div>
-        <button class="secondary-button" id="restart-button" type="button">↻ 重新開始</button>
-      </section>
-    </main>
-  </body>
+    <section class="screen loading-screen" id="loading-screen" aria-labelledby="loading-title">
+      <div class="stars-loader" aria-hidden="true"><span>✦</span><span>✦</span><span>✦</span></div>
+      <h2 id="loading-title" tabindex="-1">正在讀取今天的星光…</h2>
+      <p class="section-copy">請稍候片刻。</p>
+    </section>
+
+    <section class="screen result" id="result-screen" aria-labelledby="result-title">
+      <div class="result-symbol" aria-hidden="true">☾</div>
+      <p class="eyebrow">YOUR MESSAGE FOR TODAY</p>
+      <p class="fortune-label">今日籤運</p>
+      <div class="fortune" id="fortune-output"></div>
+      <h2 id="result-title" tabindex="-1">你的今日星語</h2>
+      <article class="letter" id="letter-output"></article>
+      <div class="mood-echo"><span>你今天留下的心情</span><p id="mood-output"></p></div>
+      <p class="share-status" id="share-status" role="status" aria-live="polite"></p>
+      <div class="result-actions"><button class="secondary-button" id="share-button" type="button">分享今日星語</button><button class="primary-button" id="restart-button" type="button">我明白了。</button></div>
+    </section>
+  </main>
+</body>
 </html>

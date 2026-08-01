@@ -108,3 +108,27 @@ textarea::placeholder { color: #a7a1ae; }
 }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
+
+.question-enter { animation: question-in .22s ease-out; }
+@keyframes question-in { from { opacity: .2; transform: translateX(8px); } to { opacity: 1; transform: none; } }
+.loading-screen { margin-top: 18vh; text-align: center; }
+.stars-loader { display: flex; justify-content: center; gap: 14px; color: var(--violet); font-size: 1.25rem; }
+.stars-loader span { animation: star-pulse .9s ease-in-out infinite alternate; }
+.stars-loader span:nth-child(2) { animation-delay: .18s; }
+.stars-loader span:nth-child(3) { animation-delay: .36s; }
+@keyframes star-pulse { from { opacity: .25; transform: translateY(3px); } to { opacity: 1; transform: translateY(-3px); } }
+.fortune-label { margin: 22px 0 5px; color: var(--muted); font-size: .75rem; letter-spacing: .12em; }
+.fortune { font-family: Georgia, "Noto Serif TC", serif; color: var(--violet-dark); font-size: clamp(2rem, 7vw, 3.5rem); font-weight: 700; }
+.mood-echo { margin: 18px auto 28px; padding: 18px 22px; border-left: 3px solid var(--violet); background: rgba(255,253,248,.65); text-align: left; overflow-wrap: anywhere; }
+.mood-echo span { color: var(--muted); font-size: .75rem; }
+.mood-echo p { margin: 8px 0 0; white-space: pre-wrap; line-height: 1.7; }
+.share-status { min-height: 1.5em; color: var(--violet-dark); font-size: .82rem; }
+.result-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+@media (max-width: 480px) {
+  h1 { font-size: 2.25rem; }
+  .zodiac-grid { grid-template-columns: repeat(2, 1fr); }
+  .actions.split, .result-actions { gap: 14px; }
+  .result-actions button { width: 100%; }
+  textarea { min-height: 150px; }
+}
