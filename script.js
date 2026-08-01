@@ -183,3 +183,150 @@ $("#share-button").addEventListener("click", shareResult);
 $("#restart-button").addEventListener("click", resetApp);
 
 buildZodiacGrid();
+// ===== Donation Modal =====
+const donateModal = document.getElementById('donateModal');
+const openDonateModal = document.getElementById('openDonateModal');
+const closeDonateModal = document.getElementById('closeDonateModal');
+const donateForm = document.getElementById('donateForm');
+const customAmountInput = document.getElementById('customAmount');
+const amountButtons = document.querySelectorAll('.amount-btn');
+let selectedAmount = null;
+let currentDonorName = '';
+let currentDonorAmount = '';
+
+openDonateModal.addEventListener('click', () => donateModal.classList.remove('hidden'));
+closeDonateModal.addEventListener('click', () => donateModal.classList.add('hidden'));
+donateModal.addEventListener('click', (e) => { if (e.target === donateModal) donateModal.classList.add('hidden'); });
+
+amountButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    amountButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedAmount = btn.dataset.amount;
+    customAmountInput.value = '';
+  });
+});
+customAmountInput.addEventListener('input', () => {
+  amountButtons.forEach(b => b.classList.remove('active'));
+  selectedAmount = null;
+});
+
+donateForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = document.getElementById('supporterName').value.trim();
+  const amount = selectedAmount || customAmountInput.value;
+
+  if (!name || !amount) {
+    alert('Please fill in your name and donation amount 💛');
+    return;
+  }
+
+  currentDonorName = name;
+  currentDonorAmount = amount;
+
+  document.getElementById('paySummaryName').textContent = name;
+  document.getElementById('paySummaryAmount').textContent = `$${amount}`;
+
+  donateModal.classList.add('hidden');
+  openPaymentModal();
+});
+
+// ===== Payment Gateway Modal =====
+const paymentModal = document.getElementById('paymentModal');
+const paymentFormStep = document.getElementById('paymentFormStep');
+const paymentLoadingStep = document.getElementById('paymentLoadingStep');
+const paymentSuccessStep = document.getElementById('paymentSuccessStep');
+const cardForm = document.getElementById('cardForm');
+const cardNumber = document.getElementById('cardNumber');
+const cardExpiry = document.getElementById('cardExpiry');
+
+function openPaymentModal() {
+  paymentFormStep.classList.remove('hidden');
+  paymentLoadingStep.classList.add('hidden');
+  paymentSuccessStep.classList.add('hidden');
+  cardForm.reset();
+  paymentModal.classList.remove('hidden');
+}
+
+// Auto-format card number & expiry
+cardNumber.addEventListener('input', (e) => {
+  let v = e.target.value.replace(/\D/g, '').slice(0, 16);
+  e.target.value = v.replace(/(.{4})/g, '$1 ').trim();
+});
+cardExpiry.addEventListener('input', (e) => {
+  let v = e.target.value.replace(/\D/g, '').slice(0, 4);
+  if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+  e.target.value = v;
+});
+
+cardForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  paymentFormStep.classList.add('hidden');
+  paymentLoadingStep.classList.remove('hidden');
+
+  // Simulate payment processing delay
+  setTimeout(() => {
+    paymentLoadingStep.classList.add('hidden');
+    paymentSuccessStep.classList.remove('hidden');
+    document.getElementById('successName').textContent = currentDonorName;
+    document.getElementById('successAmount').textContent = `$${currentDonorAmount}`;
+    fireConfetti();
+  }, 1800);
+});
+
+document.getElementById('closePaymentModal').addEventListener('click', () => {
+  paymentModal.classList.add('hidden');
+  donateForm.reset();
+  amountButtons.forEach(b => b.classList.remove('active'));
+  selectedAmount = null;
+});
+
+// ===== Simple Confetti Effect =====
+function fireConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  const parent = canvas.parentElement;
+  canvas.width = parent.offsetWidth;
+  canvas.height = parent.offsetHeight;
+
+  const colors = ['#e8a87c', '#a892d1', '#d98c5f', '#8a6fc0', '#ffd9a0'];
+  const pieces = Array.from({ length: 80 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -20,
+    r: Math.random() * 6 + 4,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    speed: Math.random() * 3 + 2,
+    drift: Math.random() * 2 - 1,
+    rotation: Math.random() * 360
+  }));
+
+  let frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.y += p.speed;
+      p.x += p.drift;
+      p.rotation += 5;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r);
+      ctx.restore();
+    });
+    frame++;
+    if (frame < 90) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+// ===== Team Credits Toggle =====
+const toggleCredits = document.getElementById('toggleCredits');
+const creditsPanel = document.getElementById('creditsPanel');
+toggleCredits.addEventListener('click', () => {
+  creditsPanel.classList.toggle('hidden');
+  toggleCredits.textContent = creditsPanel.classList.contains('hidden')
+    ? '✨ 製作團隊 Team Credits ▾'
+    : '✨ 製作團隊 Team Credits ▴';
+});

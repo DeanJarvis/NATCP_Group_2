@@ -132,3 +132,278 @@ textarea::placeholder { color: #a7a1ae; }
   .result-actions button { width: 100%; }
   textarea { min-height: 150px; }
 }
+/* ===== Palette ===== */
+:root {
+  --cream: #fffaf3;
+  --cream-deep: #fff3e2;
+  --caramel: #e8a87c;
+  --caramel-deep: #d98c5f;
+  --mystic: #a892d1;
+  --mystic-deep: #8a6fc0;
+  --text-dark: #4a2e1e;
+  --text-soft: #9c7a5b;
+  --border-soft: #ecd9c4;
+}
+
+/* ===== Coffee Button ===== */
+.coffee-btn {
+  background: linear-gradient(135deg, var(--caramel), var(--mystic));
+  color: #fff;
+  font-weight: 600;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(168, 130, 210, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.coffee-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(168,130,210,0.45); }
+
+/* ===== Modal Overlay ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(25, 15, 35, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  padding: 16px;
+}
+.modal-overlay.hidden { display: none; }
+
+/* ===== Donation Card ===== */
+.modal-card {
+  background: linear-gradient(160deg, var(--cream), var(--cream-deep));
+  border-radius: 24px;
+  padding: 36px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 20px 60px rgba(80, 40, 100, 0.25);
+  position: relative;
+  animation: popIn 0.28s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.92) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px; right: 18px;
+  background: rgba(0,0,0,0.05);
+  border: none;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-soft);
+}
+
+.modal-header { text-align: center; margin-bottom: 24px; }
+.modal-icon { font-size: 34px; display: block; margin-bottom: 6px; }
+.modal-title { font-size: 22px; color: var(--text-dark); margin: 0 0 4px; }
+.modal-subtitle { font-size: 13px; color: var(--text-soft); margin: 0; }
+
+/* ===== Form Grid (vertical, clean) ===== */
+.donate-grid { display: flex; flex-direction: column; gap: 18px; }
+.field-group { display: flex; flex-direction: column; }
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border-soft);
+  border-radius: 14px;
+  background: #fff;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.form-input:focus { border-color: var(--mystic); box-shadow: 0 0 0 3px rgba(168,130,210,0.15); }
+
+.amount-options { display: flex; gap: 8px; margin-bottom: 10px; }
+.amount-btn {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 14px;
+  border: 1.5px solid var(--border-soft);
+  background: #fff;
+  color: var(--text-dark);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.amount-btn:hover { border-color: var(--mystic); }
+.amount-btn.active {
+  background: linear-gradient(135deg, var(--caramel), var(--mystic));
+  color: #fff;
+  border-color: transparent;
+}
+
+.donate-submit-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--caramel-deep), var(--mystic-deep));
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(138, 111, 192, 0.35);
+  transition: transform 0.15s ease;
+}
+.donate-submit-btn:hover { transform: translateY(-2px); }
+
+/* ===== Payment Gateway Card ===== */
+.payment-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 36px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(80, 40, 100, 0.3);
+  position: relative;
+  animation: popIn 0.28s ease;
+  overflow: hidden;
+}
+
+.payment-header { text-align: center; margin-bottom: 18px; }
+.lock-icon { font-size: 26px; }
+.payment-header h3 { margin: 6px 0 2px; color: var(--text-dark); }
+.payment-sub { font-size: 12px; color: var(--text-soft); margin: 0; }
+
+.payment-summary {
+  background: var(--cream-deep);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-dark);
+  text-align: center;
+  margin-bottom: 20px;
+}
+.payment-summary span { font-weight: 700; color: var(--mystic-deep); }
+
+.card-row { display: flex; gap: 12px; margin-top: 14px; }
+.card-row .field-group { flex: 1; }
+
+.pay-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 13px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--caramel-deep), var(--mystic-deep));
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.pay-btn:hover { transform: translateY(-2px); }
+
+.payment-note {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-soft);
+  margin-top: 12px;
+}
+
+/* ===== Loading Step ===== */
+.payment-step.hidden { display: none; }
+#paymentLoadingStep { text-align: center; padding: 30px 0; }
+.spinner {
+  width: 48px; height: 48px;
+  border: 4px solid var(--border-soft);
+  border-top-color: var(--mystic-deep);
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-weight: 600; color: var(--text-dark); margin: 0 0 4px; }
+.loading-sub { font-size: 12px; color: var(--text-soft); }
+
+/* ===== Success Step ===== */
+#paymentSuccessStep { text-align: center; padding: 10px 0; }
+.success-check { margin: 0 auto 16px; width: 72px; }
+.checkmark { width: 72px; height: 72px; }
+.checkmark-circle {
+  stroke: var(--mystic-deep);
+  stroke-width: 2;
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: circleDraw 0.5s ease forwards;
+}
+.checkmark-tick {
+  stroke: var(--caramel-deep);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: tickDraw 0.4s ease 0.4s forwards;
+}
+@keyframes circleDraw { to { stroke-dashoffset: 0; } }
+@keyframes tickDraw { to { stroke-dashoffset: 0; } }
+
+.success-title { color: var(--text-dark); margin: 0 0 8px; font-size: 20px; }
+.success-msg { font-size: 14px; color: var(--text-soft); margin-bottom: 20px; line-height: 1.5; }
+
+#confettiCanvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+/* ===== Credits Section ===== */
+.credits-footer { text-align: center; padding: 30px 16px; }
+.credits-toggle {
+  background: var(--cream-deep);
+  border: 1.5px solid var(--border-soft);
+  border-radius: 999px;
+  padding: 10px 22px;
+  color: var(--text-dark);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.credits-toggle:hover { background: var(--border-soft); }
+
+.credits-panel {
+  max-width: 720px;
+  margin: 20px auto 0;
+}
+.credits-panel.hidden { display: none; }
+
+.credits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+.credit-card {
+  background: linear-gradient(160deg, var(--cream), var(--cream-deep));
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 22px 14px;
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(80,40,100,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.credit-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(138,111,192,0.2);
+}
+.credit-icon { font-size: 28px; margin-bottom: 8px; }
+.credit-role { font-size: 12px; color: var(--text-soft); font-weight: 600; margin-bottom: 4px; }
+.credit-name { font-size: 14px; color: var(--text-dark); font-weight: 700; }
