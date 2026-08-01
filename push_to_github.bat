@@ -47,6 +47,17 @@ if not defined CURRENT_BRANCH (
   if errorlevel 1 goto :git_fail
 )
 
+echo Fetching the latest remote changes...
+git fetch origin
+if errorlevel 1 goto :git_fail
+
+git show-ref --verify --quiet "refs/remotes/origin/%CURRENT_BRANCH%"
+if not errorlevel 1 (
+  echo Integrating origin/%CURRENT_BRANCH% before push...
+  git rebase "origin/%CURRENT_BRANCH%"
+  if errorlevel 1 goto :rebase_fail
+)
+
 echo Pushing branch %CURRENT_BRANCH% to GitHub...
 git push -u origin "%CURRENT_BRANCH%"
 if errorlevel 1 goto :git_fail
@@ -59,6 +70,13 @@ goto :done
 echo.
 echo [ERROR] Git operation failed. Review the message above.
 echo Make sure your GitHub SSH key is configured and has repository access.
+goto :fail
+
+:rebase_fail
+echo.
+echo [ERROR] Remote changes conflict with local changes.
+echo Resolve the conflicted files, then run: git rebase --continue
+echo To cancel the integration, run: git rebase --abort
 
 :fail
 echo.
