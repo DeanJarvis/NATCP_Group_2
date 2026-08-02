@@ -450,13 +450,17 @@ $("#donate-form").addEventListener("submit", (event) => {
   $("#donate-error").textContent = "";
   pendingDonation = { name, amount, message: $("#donate-message").value.trim() };
 
-  // Move to the mock card payment step.
-  $("#card-name").value = name;
-  donateFormStep.hidden = true;
-  donateCardStep.hidden = false;
-  setDonateStep(2);
-  updateCardPreview();
-  window.setTimeout(() => $("#card-number").focus(), 50);
+  const paymentEndpoint = window.location.protocol === "file:" ? "http://localhost:3000/pay" : "/pay";
+  const paymentForm = document.createElement("form");
+  paymentForm.method = "POST";
+  paymentForm.action = paymentEndpoint;
+  const amountInput = document.createElement("input");
+  amountInput.type = "hidden";
+  amountInput.name = "amount";
+  amountInput.value = String(amount);
+  paymentForm.append(amountInput);
+  document.body.append(paymentForm);
+  paymentForm.submit();
 });
 
 /* ---------- Mock credit card payment ---------- */
