@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>傳統香譜線上占卜</title>
+    <style>
+        :root {
+            --bg-color: #1c1917;
+            --card-bg: #292524;
+            --primary-color: #d97706;
+            --primary-hover: #b45309;
+            --text-color: #f5f5f4;
+            --text-muted: #a8a29e;
+            --incense-stick: #d4d4d8;
+            --incense-burning: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 440px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border: 1px solid #44403c;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: #fbbf24;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        /* 輸入框樣式 */
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid #57534e;
+            background-color: #1c1917;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+            text-align: center;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .input-group input::placeholder {
+            color: #78716c;
+        }
+
+        /* 香爐與香枝視覺區塊 */
+        .burner-container {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .sticks-area {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            height: 110px;
+            align-items: flex-end;
+            margin-bottom: -5px;
+            z-index: 2;
+        }
+
+        .stick-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .stick {
+            width: 4px;
+            background-color: var(--incense-stick);
+            border-radius: 2px;
+            position: relative;
+            transition: height 0.5s ease-in-out;
+        }
+
+        /* 香火頭 */
+        .stick::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -1px;
+            width: 6px;
+            height: 6px;
+            background-color: var(--incense-burning);
+            border-radius: 50%;
+            box-shadow: 0 0 6px #ef4444;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .burning .stick::before {
+            opacity: 1;
+        }
+
+        /* 香爐本體 */
+        .censer {
+            width: 160px;
+            height: 45px;
+            background: linear-gradient(to bottom, #d97706, #b45309);
+            border-radius: 0 0 40px 40px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 3;
+            border-top: 3px solid #f59e0b;
+        }
+
+        /* 燃燒煙霧動畫 */
+        @keyframes smoke {
+            0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
+            50% { transform: translateY(-30px) translateX(10px) scale(1.5); opacity: 0.3; }
+            100% { transform: translateY(-60px) translateX(-5px) scale(2); opacity: 0; }
+        }
+
+        .smoke-particle {
+            position: absolute;
+            top: -10px;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            filter: blur(4px);
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .burning .smoke-particle {
+            animation: smoke 1.5s infinite ease-out;
+        }
+
+        .stick-wrapper:nth-child(1) .smoke-particle { animation-delay: 0s; }
+        .stick-wrapper:nth-child(2) .smoke-particle { animation-delay: 0.5s; }
+        .stick-wrapper:nth-child(3) .smoke-particle { animation-delay: 1s; }
+
+        /* 結果顯示區 */
+        .result-box {
+            min-height: 85px;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #fbbf24;
+        }
+
+        .result-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* 按鈕風格 */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            background-color: #57534e;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* 歷史紀錄 */
+        .history {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid #44403c;
+            padding-top: 15px;
+            text-align: left;
+        }
+
+        .history-list {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .history-tag {
+            background-color: #44403c;
+            color: #f5f5f4;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>傳統香譜占卜</h1>
+        <div class="subtitle">誠心默念您的疑問，點燃清香請示神明</div>
+
+        <div class="input-group">
+            <input type="text" id="questionInput" placeholder="例如：我最近的事業發展順利嗎？" autocomplete="off">
+        </div>
+
+        <div class="burner-container">
+            <div id="sticksArea" class="sticks-area">
+                <!-- 左香 -->
+                <div class="stick-wrapper">
+                    <div class="smoke-particle"></div>
+                    <div id="stick1" class="stick" style="height: 90px;"></div>
+                </div>
+                <!-- 中香 -->
+                <div class="stick-wrapper">
+                    <div class="smoke-particle"></div>
+                    <div id="stick2" class="stick" style="height: 90px;"></div>
+                </div>
+                <!-- 右香 -->
+                <div class="stick-wrapper">
+                    <div class="smoke-particle"></div>
+                    <div id="stick3" class="stick" style="height: 90px;"></div>
+                </div>
+            </div>
+            <div class="censer"></div>
+        </div>
+
+        <div class="result-box">
+            <div id="resultTitle" class="result-title">準備就緒</div>
+            <div id="resultDesc" class="result-desc">請輸入問題並點擊下方按鈕開始燃香</div>
+        </div>
+
+        <button id="tossBtn" class="btn" onclick="startDivination()">開始燃香占卜</button>
+
+        <div class="history">
+            <div>近期占卜紀錄：</div>
+            <div id="historyList" class="history-list">
+                <span style="color: #78716c;">尚無紀錄</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 依據傳統二十四香譜設定對應的高低與含意
+        const incenseTypes = [
+            { name: "平安香", desc: "三日內有吉祥之兆，平安無事，萬事順遂。", heights: [90, 90, 90] },
+            { name: "獻瑞香", desc: "十日內有吉祥如意，喜事臨門，謀望有成。", heights: [90, 75, 90] },
+            { name: "增福香", desc: "十日之內進財之兆，福祿雙收，財源廣進。", heights: [75, 90, 90] },
+            { name: "大天真", desc: "神仙臨，急焚香火，祈求神佑，所求皆靈。", heights: [50, 90, 50] },
+            { name: "大蓮花香", desc: "七日內來喜財，貴人扶持，名利雙收。", heights: [90, 90, 60] },
+            { name: "小蓮花香", desc: "三日內有人來，吉事相望，心想事成。", heights: [60, 90, 90] },
+            { name: "消災香", desc: "消災難滿，百福並生，諸事化吉。", heights: [90, 60, 90] },
+            { name: "功德香", desc: "功行全備，神靈默佑，諸惡遠離。", heights: [90, 90, 40] },
+            { name: "極樂香", desc: "修仙自有金丹成，庶人終有喜慶成。", heights: [40, 90, 90] },
+            { name: "長生香", desc: "早有土寇，晚有盜賊，須防意外波折。", heights: [90, 40, 90] },
+            { name: "惡事香", desc: "七日內有人來，爭打是非，宜忍耐為上。", heights: [40, 40, 90] },
+            { name: "疾病香", desc: "七日之內有疾病人，應注意身心調養。", heights: [90, 40, 40] },
+            { name: "口舌香", desc: "七日內有凶人來爭是非，慎防小人口舌。", heights: [40, 90, 40] },
+            { name: "催命香", desc: "月內有命終之人或半年傷小口，宜安分守己。", heights: [30, 90, 30] }
+        ];
+
+        const history = [];
+
+        function startDivination() {
+            const btn = document.getElementById('tossBtn');
+            const questionInput = document.getElementById('questionInput');
+            const sticksArea = document.getElementById('sticksArea');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDesc = document.getElementById('resultDesc');
+            const stick1 = document.getElementById('stick1');
+            const stick2 = document.getElementById('stick2');
+            const stick3 = document.getElementById('stick3');
+
+            const question = questionInput.value.trim();
+            if (!question) {
+                resultTitle.textContent = "請先輸入問題";
+                resultDesc.textContent = "向神明請示前，請先在上方輸入框寫下您的問題！";
+                questionInput.focus();
+                return;
+            }
+
+            // 鎖定介面並開始燃香動畫
+            btn.disabled = true;
+            questionInput.disabled = true;
+            sticksArea.classList.add('burning');
+            resultTitle.textContent = "清香燃燒中...";
+            resultDesc.textContent = `正為您請示：「${question}」，請誠心等待香譜顯現...`;
+
+            // 隨機抽選一項香譜結果
+            const selected = incenseTypes[Math.floor(Math.random() * incenseTypes.length)];
+
+            setTimeout(() => {
+                sticksArea.classList.remove('burning');
+
+                // 設定三支香的高度
+                stick1.style.height = selected.heights[0] + 'px';
+                stick2.style.height = selected.heights[1] + 'px';
+                stick3.style.height = selected.heights[2] + 'px';
+
+                resultTitle.textContent = `香譜結果：${selected.name}`;
+                resultDesc.textContent = `針對「${question}」：${selected.desc}`;
+
+                updateHistory(selected.name, question);
+
+                btn.disabled = false;
+                questionInput.disabled = false;
+            }, 1500);
+        }
+
+        function updateHistory(outcome, question) {
+            history.unshift({ outcome, question });
+            if (history.length > 5) history.pop();
+
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = history.map(item => 
+                `<span class="history-tag" title="問題：${item.question}">🪔 ${item.outcome}</span>`
+            ).join('');
+        }
+    </script>
+</body>
+</html>
