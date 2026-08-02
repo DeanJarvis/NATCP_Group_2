@@ -55,13 +55,14 @@ function showScreen(id) {
 }
 
 function buildZodiacGrid() {
-  $("#zodiac-grid").replaceChildren(...zodiacSigns.map(([symbol, name, date]) => {
+  $("#zodiac-grid").replaceChildren(...zodiacSigns.map(([symbol, name, date], index) => {
     const button = document.createElement("button");
     button.className = "zodiac-option";
     button.type = "button";
     button.setAttribute("role", "radio");
     button.setAttribute("aria-checked", "false");
     button.dataset.name = name;
+    button.style.setProperty("--zodiac-angle", `${index * 30}deg`);
     button.innerHTML = `<span class="symbol" aria-hidden="true">${symbol}</span>${name}<small>${date}</small>`;
     return button;
   }));
@@ -119,10 +120,40 @@ function renderResult() {
     return paragraph;
   }));
   $("#mood-output").textContent = state.mood.trim() || "今天選擇留白。";
+  $("#card-date").textContent = formatToday();
   $("#share-status").textContent = "";
 }
 
-function submitMood() {
+function formatToday() {
+  return new Intl.DateTimeFormat("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: "long" }).format(new Date());
+}
+
+async function requestApiLetter() {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      signal: controller.signal,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        zodiac: state.zodiac,
+        answers: { social: state.answers[0], decision: state.answers[1], energy: state.answers[2] },
+        fortune: state.fortune,
+        mood: state.mood
+      })
+    });
+    if (!response.ok) throw new Error("API request failed");
+    const result = await response.json();
+    if (![result.title, result.letter, result.closing].every((value) => typeof value === "string" && value.trim())) throw new Error("Invalid API response");
+    state.letter = `${result.title.trim()}\n\n${result.letter.trim()}\n\n${result.closing.trim()}`;
+    $("#generation-source").textContent = "此封信箋由 AI 為你生成。";
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+async function submitMood() {
   if (state.generating) return;
   state.generating = true;
   $("#mood-submit").disabled = true;
@@ -130,7 +161,17 @@ function submitMood() {
   state.fortune = fortunes[Math.floor(Math.random() * fortunes.length)];
   state.letter = generateLetter();
   showScreen("loading-screen");
-  window.setTimeout(() => { renderResult(); state.generating = false; $("#mood-submit").disabled = false; showScreen("result-screen"); }, 900);
+  $("#generation-source").textContent = "";
+  try {
+    await requestApiLetter();
+  } catch {
+    $("#generation-source").textContent = "AI 暫時沒有回應，已為你使用星光備援信箋。";
+  } finally {
+    renderResult();
+    state.generating = false;
+    $("#mood-submit").disabled = false;
+    showScreen("result-screen");
+  }
 }
 
 function shareText() {
@@ -157,6 +198,57 @@ async function shareResult() {
   }
 }
 
+async function copyShareText() {
+  try {
+    await navigator.clipboard.writeText(shareText());
+    $("#share-status").textContent = "已複製今日星語。";
+  } catch {
+    await shareResult();
+  }
+}
+
+function shareToPlatform(platform) {
+  const text = shareText();
+  const pageUrl = window.location.href;
+  const encodedText = encodeURIComponent(`${text}\n\n${pageUrl}`);
+  const encodedUrl = encodeURIComponent(pageUrl);
+  const urls = {
+    line: `https://line.me/R/msg/text/?${encodedText}`,
+    whatsapp: `https://wa.me/?text=${encodedText}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+    x: `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodedUrl}`
+  };
+  if (platform === "copy") return copyShareText();
+  if (platform === "instagram") return shareResult();
+  if (urls[platform]) window.open(urls[platform], "_blank", "noopener,noreferrer");
+}
+
+async function saveResultImage() {
+  if (typeof window.html2canvas !== "function") {
+    $("#share-status").textContent = "圖片工具尚未載入，請稍後再試。";
+    return;
+  }
+  const button = $("#save-image");
+  button.disabled = true;
+  $("#share-status").textContent = "正在製作圖片…";
+  try {
+    const canvas = await window.html2canvas($("#result-card"), { scale: 2, backgroundColor: null, useCORS: true });
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (!blob) throw new Error("image failed");
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `HoroscopeToday-${new Date().toISOString().slice(0, 10)}.png`;
+    link.click();
+    URL.revokeObjectURL(url);
+    $("#share-status").textContent = "今日星語圖片已儲存。";
+  } catch {
+    $("#share-status").textContent = "圖片儲存失敗，請稍後再試。";
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function resetApp() {
   state = freshState();
   $("#mood-input").value = "";
@@ -166,6 +258,7 @@ function resetApp() {
   $("#fortune-output").textContent = "";
   $("#letter-output").replaceChildren();
   $("#mood-output").textContent = "";
+  $("#generation-source").textContent = "";
   document.querySelectorAll(".zodiac-option").forEach((item) => { item.classList.remove("is-selected"); item.setAttribute("aria-checked", "false"); });
   showScreen("home-screen");
 }
@@ -179,154 +272,135 @@ $("#quiz-back").addEventListener("click", () => { if (state.questionIndex === 0)
 $("#mood-input").addEventListener("input", (event) => { state.mood = event.target.value; $("#char-count").textContent = String(event.target.value.length); });
 $("#mood-back").addEventListener("click", () => { if (state.generating) return; state.questionIndex = 2; renderQuestion(); showScreen("quiz-screen"); });
 $("#mood-submit").addEventListener("click", submitMood);
-$("#share-button").addEventListener("click", shareResult);
+$("#share-button").addEventListener("click", () => {
+  const menu = $("#share-menu");
+  menu.hidden = !menu.hidden;
+  $("#share-button").setAttribute("aria-expanded", String(!menu.hidden));
+});
+$("#share-menu").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-share]");
+  if (!button) return;
+  shareToPlatform(button.dataset.share);
+  $("#share-menu").hidden = true;
+  $("#share-button").setAttribute("aria-expanded", "false");
+});
+$("#save-image").addEventListener("click", saveResultImage);
+$("#card-bg-toggle").addEventListener("click", () => {
+  const menu = $("#card-bg-menu");
+  menu.hidden = !menu.hidden;
+  $("#card-bg-toggle").setAttribute("aria-expanded", String(!menu.hidden));
+});
+$("#card-bg-menu").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-background]");
+  if (!button) return;
+  $("#result-card").dataset.background = button.dataset.background;
+  document.querySelectorAll(".card-bg-option").forEach((option) => {
+    const selected = option === button;
+    option.classList.toggle("is-selected", selected);
+    option.setAttribute("aria-pressed", String(selected));
+  });
+  $("#card-bg-menu").hidden = true;
+  $("#card-bg-toggle").setAttribute("aria-expanded", "false");
+});
 $("#restart-button").addEventListener("click", resetApp);
 
 buildZodiacGrid();
-// ===== Donation Modal =====
-const donateModal = document.getElementById('donateModal');
-const openDonateModal = document.getElementById('openDonateModal');
-const closeDonateModal = document.getElementById('closeDonateModal');
-const donateForm = document.getElementById('donateForm');
-const customAmountInput = document.getElementById('customAmount');
-const amountButtons = document.querySelectorAll('.amount-btn');
-let selectedAmount = null;
-let currentDonorName = '';
-let currentDonorAmount = '';
+$("#date-display").textContent = formatToday();
 
-openDonateModal.addEventListener('click', () => donateModal.classList.remove('hidden'));
-closeDonateModal.addEventListener('click', () => donateModal.classList.add('hidden'));
-donateModal.addEventListener('click', (e) => { if (e.target === donateModal) donateModal.classList.add('hidden'); });
+const donateModal = $("#donate-modal");
+const donateFormStep = $("#donate-form-step");
+const donateSuccessStep = $("#donate-success-step");
+const amountButtons = [...document.querySelectorAll(".amount-button")];
+let selectedDonateAmount = null;
 
-amountButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    amountButtons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedAmount = btn.dataset.amount;
-    customAmountInput.value = '';
-  });
-});
-customAmountInput.addEventListener('input', () => {
-  amountButtons.forEach(b => b.classList.remove('active'));
-  selectedAmount = null;
-});
-
-donateForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const name = document.getElementById('supporterName').value.trim();
-  const amount = selectedAmount || customAmountInput.value;
-
-  if (!name || !amount) {
-    alert('Please fill in your name and donation amount 💛');
-    return;
-  }
-
-  currentDonorName = name;
-  currentDonorAmount = amount;
-
-  document.getElementById('paySummaryName').textContent = name;
-  document.getElementById('paySummaryAmount').textContent = `$${amount}`;
-
-  donateModal.classList.add('hidden');
-  openPaymentModal();
-});
-
-// ===== Payment Gateway Modal =====
-const paymentModal = document.getElementById('paymentModal');
-const paymentFormStep = document.getElementById('paymentFormStep');
-const paymentLoadingStep = document.getElementById('paymentLoadingStep');
-const paymentSuccessStep = document.getElementById('paymentSuccessStep');
-const cardForm = document.getElementById('cardForm');
-const cardNumber = document.getElementById('cardNumber');
-const cardExpiry = document.getElementById('cardExpiry');
-
-function openPaymentModal() {
-  paymentFormStep.classList.remove('hidden');
-  paymentLoadingStep.classList.add('hidden');
-  paymentSuccessStep.classList.add('hidden');
-  cardForm.reset();
-  paymentModal.classList.remove('hidden');
+function setDonateModal(open) {
+  donateModal.hidden = !open;
+  document.body.classList.toggle("modal-open", open);
+  if (open) $("#close-donate").focus();
 }
 
-// Auto-format card number & expiry
-cardNumber.addEventListener('input', (e) => {
-  let v = e.target.value.replace(/\D/g, '').slice(0, 16);
-  e.target.value = v.replace(/(.{4})/g, '$1 ').trim();
-});
-cardExpiry.addEventListener('input', (e) => {
-  let v = e.target.value.replace(/\D/g, '').slice(0, 4);
-  if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
-  e.target.value = v;
-});
+function resetDonateDemo() {
+  $("#donate-form").reset();
+  selectedDonateAmount = null;
+  amountButtons.forEach((button) => {
+    button.classList.remove("is-selected");
+    button.setAttribute("aria-pressed", "false");
+  });
+  $("#donate-error").textContent = "";
+  donateFormStep.hidden = false;
+  donateSuccessStep.hidden = true;
+}
 
-cardForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  paymentFormStep.classList.add('hidden');
-  paymentLoadingStep.classList.remove('hidden');
-
-  // Simulate payment processing delay
-  setTimeout(() => {
-    paymentLoadingStep.classList.add('hidden');
-    paymentSuccessStep.classList.remove('hidden');
-    document.getElementById('successName').textContent = currentDonorName;
-    document.getElementById('successAmount').textContent = `$${currentDonorAmount}`;
-    fireConfetti();
-  }, 1800);
-});
-
-document.getElementById('closePaymentModal').addEventListener('click', () => {
-  paymentModal.classList.add('hidden');
-  donateForm.reset();
-  amountButtons.forEach(b => b.classList.remove('active'));
-  selectedAmount = null;
-});
-
-// ===== Simple Confetti Effect =====
 function fireConfetti() {
-  const canvas = document.getElementById('confettiCanvas');
-  const ctx = canvas.getContext('2d');
-  const parent = canvas.parentElement;
-  canvas.width = parent.offsetWidth;
-  canvas.height = parent.offsetHeight;
-
-  const colors = ['#e8a87c', '#a892d1', '#d98c5f', '#8a6fc0', '#ffd9a0'];
-  const pieces = Array.from({ length: 80 }, () => ({
-    x: Math.random() * canvas.width,
-    y: -20,
-    r: Math.random() * 6 + 4,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    speed: Math.random() * 3 + 2,
-    drift: Math.random() * 2 - 1,
-    rotation: Math.random() * 360
-  }));
-
+  const canvas = $("#confetti-canvas");
+  const context = canvas.getContext("2d");
+  const card = canvas.parentElement;
+  canvas.width = card.clientWidth;
+  canvas.height = card.clientHeight;
+  const colors = ["#7668a6", "#d9a06c", "#f0c987", "#b7a8dc"];
+  const pieces = Array.from({ length: 50 }, () => ({ x: Math.random() * canvas.width, y: -10, size: Math.random() * 5 + 3, speed: Math.random() * 2.5 + 1.5, drift: Math.random() * 1.5 - .75, color: colors[Math.floor(Math.random() * colors.length)] }));
   let frame = 0;
   function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    pieces.forEach(p => {
-      p.y += p.speed;
-      p.x += p.drift;
-      p.rotation += 5;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate((p.rotation * Math.PI) / 180);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r);
-      ctx.restore();
-    });
-    frame++;
-    if (frame < 90) requestAnimationFrame(animate);
-    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach((piece) => { piece.y += piece.speed; piece.x += piece.drift; context.fillStyle = piece.color; context.fillRect(piece.x, piece.y, piece.size, piece.size); });
+    frame += 1;
+    if (frame < 80) requestAnimationFrame(animate);
+    else context.clearRect(0, 0, canvas.width, canvas.height);
   }
   animate();
 }
 
-// ===== Team Credits Toggle =====
-const toggleCredits = document.getElementById('toggleCredits');
-const creditsPanel = document.getElementById('creditsPanel');
-toggleCredits.addEventListener('click', () => {
-  creditsPanel.classList.toggle('hidden');
-  toggleCredits.textContent = creditsPanel.classList.contains('hidden')
-    ? '✨ 製作團隊 Team Credits ▾'
-    : '✨ 製作團隊 Team Credits ▴';
+$("#open-donate").addEventListener("click", () => { resetDonateDemo(); setDonateModal(true); });
+$("#close-donate").addEventListener("click", () => setDonateModal(false));
+$("#finish-donate").addEventListener("click", () => setDonateModal(false));
+donateModal.addEventListener("click", (event) => { if (event.target === donateModal) setDonateModal(false); });
+document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !donateModal.hidden) setDonateModal(false); });
+
+amountButtons.forEach((button) => button.addEventListener("click", () => {
+  selectedDonateAmount = Number(button.dataset.amount);
+  $("#custom-amount").value = "";
+  amountButtons.forEach((item) => {
+    const selected = item === button;
+    item.classList.toggle("is-selected", selected);
+    item.setAttribute("aria-pressed", String(selected));
+  });
+}));
+
+$("#custom-amount").addEventListener("input", () => {
+  selectedDonateAmount = null;
+  amountButtons.forEach((button) => { button.classList.remove("is-selected"); button.setAttribute("aria-pressed", "false"); });
+});
+
+$("#donate-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const name = $("#supporter-name").value.trim();
+  const customAmount = Number($("#custom-amount").value);
+  const amount = selectedDonateAmount || customAmount;
+  if (!name || !Number.isFinite(amount) || amount < 1 || amount > 100000) {
+    $("#donate-error").textContent = "請填寫名字，並選擇有效的贊助金額。";
+    return;
+  }
+  $("#success-name").textContent = name;
+  $("#success-amount").textContent = `NT$${amount.toLocaleString("zh-TW")}`;
+  donateFormStep.hidden = true;
+  donateSuccessStep.hidden = false;
+  $("#finish-donate").focus();
+  fireConfetti();
+});
+
+function applyTheme(theme) {
+  const isDark = theme === "dark";
+  document.body.classList.toggle("theme-dark", isDark);
+  $("#theme-toggle").setAttribute("aria-pressed", String(isDark));
+  $("#theme-toggle").setAttribute("aria-label", isDark ? "切換為療癒亮色主題" : "切換為神秘深色主題");
+  $(".theme-toggle-icon").textContent = isDark ? "☀" : "☾";
+  try { localStorage.setItem("horoscope-theme", isDark ? "dark" : "light"); } catch {}
+}
+
+let savedTheme = "light";
+try { savedTheme = localStorage.getItem("horoscope-theme") || "light"; } catch {}
+applyTheme(savedTheme === "dark" ? "dark" : "light");
+
+$("#theme-toggle").addEventListener("click", () => {
+  applyTheme(document.body.classList.contains("theme-dark") ? "light" : "dark");
 });

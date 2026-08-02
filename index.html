@@ -6,6 +6,7 @@
   <meta name="description" content="HoroscopeToday，用三個問題讀懂此刻的自己。">
   <title>HoroscopeToday｜今日星語</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 <body>
@@ -13,6 +14,7 @@
   <div class="ambient ambient-two" aria-hidden="true"></div>
   <main class="app-shell">
     <header class="brand" aria-label="HoroscopeToday"><span class="brand-mark" aria-hidden="true">✦</span><span>HoroscopeToday</span></header>
+    <p id="date-display" class="date-display" aria-live="polite"></p>
 
     <section class="screen is-active hero" id="home-screen" aria-labelledby="home-title">
       <p class="eyebrow">A LITTLE NOTE FROM THE STARS</p>
@@ -25,9 +27,11 @@
     <section class="screen" id="zodiac-screen" aria-labelledby="zodiac-title">
       <div class="step-meta"><span>01</span><span>選擇你的星座</span></div>
       <h2 id="zodiac-title" tabindex="-1">你是哪一個星座？</h2>
-      <p class="section-copy">從十二星座中選出最熟悉的那一個。</p>
-      <div class="zodiac-grid" id="zodiac-grid" role="radiogroup" aria-label="十二星座"></div>
-      <div class="actions"><button class="primary-button" id="zodiac-next" type="button" disabled>繼續 <span>→</span></button></div>
+      <p class="section-copy">點選星盤上的星座，再按下中央的確定。</p>
+      <div class="zodiac-wheel-container">
+        <div class="zodiac-grid zodiac-wheel" id="zodiac-grid" role="radiogroup" aria-label="十二星座"></div>
+        <button class="primary-button circular-confirm" id="zodiac-next" type="button" disabled>確定</button>
+      </div>
     </section>
 
     <section class="screen" id="quiz-screen" aria-labelledby="question-title">
@@ -56,17 +60,56 @@
     </section>
 
     <section class="screen result" id="result-screen" aria-labelledby="result-title">
-      <div class="result-symbol" aria-hidden="true">☾</div>
-      <p class="eyebrow">YOUR MESSAGE FOR TODAY</p>
-      <p class="fortune-label">今日籤運</p>
-      <div class="fortune" id="fortune-output"></div>
-      <h2 id="result-title" tabindex="-1">你的今日星語</h2>
-      <article class="letter" id="letter-output"></article>
-      <div class="mood-echo"><span>你今天留下的心情</span><p id="mood-output"></p></div>
+      <div class="card-tools" data-html2canvas-ignore="true"><button class="secondary-button" id="card-bg-toggle" type="button" aria-expanded="false" aria-controls="card-bg-menu">✦ 換背景</button><div class="card-bg-menu" id="card-bg-menu" hidden><button type="button" class="card-bg-option is-selected" data-background="starlight" aria-pressed="true">星光</button><button type="button" class="card-bg-option" data-background="sunset" aria-pressed="false">晚霞</button><button type="button" class="card-bg-option" data-background="midnight" aria-pressed="false">夜空</button></div></div>
+      <div class="result-card" id="result-card" data-background="starlight">
+        <p class="card-date" id="card-date"></p>
+        <div class="result-symbol" aria-hidden="true">☾</div>
+        <p class="eyebrow">YOUR MESSAGE FOR TODAY</p>
+        <p class="fortune-label">今日籤運</p>
+        <div class="fortune" id="fortune-output"></div>
+        <h2 id="result-title" tabindex="-1">你的今日星語</h2>
+        <article class="letter" id="letter-output"></article>
+        <p class="generation-source" id="generation-source" role="status"></p>
+        <div class="mood-echo"><span>你今天留下的心情</span><p id="mood-output"></p></div>
+        <p class="card-sign">— HoroscopeToday</p>
+      </div>
       <p class="share-status" id="share-status" role="status" aria-live="polite"></p>
-      <div class="result-actions"><button class="secondary-button" id="share-button" type="button">分享今日星語</button><button class="primary-button" id="restart-button" type="button">我明白了。</button></div>
+      <div class="result-actions"><button class="secondary-button" id="save-image" type="button">💾 儲存圖片</button><div class="share-menu-wrap"><button class="secondary-button" id="share-button" type="button" aria-expanded="false" aria-controls="share-menu">📤 分享</button><div id="share-menu" class="share-menu" hidden><button type="button" data-share="line">LINE</button><button type="button" data-share="instagram">Instagram</button><button type="button" data-share="whatsapp">WhatsApp</button><button type="button" data-share="facebook">Facebook</button><button type="button" data-share="x">X</button><button type="button" data-share="copy">複製</button></div></div><button class="primary-button" id="restart-button" type="button">我明白了。</button></div>
     </section>
   </main>
+
+  <aside class="support-bar" aria-label="支持專案">
+    <button id="open-donate" class="coffee-button" type="button">☕ Buy Me a Coffee</button>
+  </aside>
+
+  <div id="donate-modal" class="modal-overlay" hidden>
+    <section class="donate-card" role="dialog" aria-modal="true" aria-labelledby="donate-title">
+      <button class="modal-close" id="close-donate" type="button" aria-label="關閉贊助視窗">×</button>
+      <div id="donate-form-step">
+        <div class="modal-header"><span aria-hidden="true">☕</span><h2 id="donate-title">支持 HoroscopeToday</h2><p>你的鼓勵，讓今天的星光繼續閃耀。</p></div>
+        <p class="demo-notice">展示功能，不會真的扣款，也不會儲存資料。</p>
+        <form id="donate-form" class="donate-form">
+          <label>你的名字<input type="text" id="supporter-name" maxlength="40" placeholder="例如：Alex" required></label>
+          <fieldset><legend>贊助金額</legend><div class="amount-options"><button type="button" class="amount-button" data-amount="50">NT$50</button><button type="button" class="amount-button" data-amount="100">NT$100</button><button type="button" class="amount-button" data-amount="500">NT$500</button></div><label class="custom-amount">或自訂金額<input type="number" id="custom-amount" min="1" max="100000" placeholder="輸入金額"></label></fieldset>
+          <label>留下一句祝福<textarea id="donate-message" maxlength="200" rows="3" placeholder="想對團隊說的話……"></textarea></label>
+          <p class="donate-error" id="donate-error" role="alert"></p>
+          <button class="primary-button donate-submit" type="submit">確認 Demo 贊助 ✦</button>
+        </form>
+      </div>
+      <div id="donate-success-step" class="donate-success" hidden>
+        <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+        <span class="success-mark" aria-hidden="true">✓</span>
+        <h2>謝謝你的支持！</h2>
+        <p><strong id="success-name"></strong>，你送出的 <strong id="success-amount"></strong> Demo 鼓勵已照亮今天的星空。</p>
+        <p class="demo-notice">這是展示結果，沒有發生實際交易。</p>
+        <button id="finish-donate" class="primary-button" type="button">完成</button>
+      </div>
+    </section>
+  </div>
+
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切換為神秘深色主題" aria-pressed="false">
+    <span class="theme-toggle-icon" aria-hidden="true">☾</span>
+  </button>
 </body>
 </html>
 <!-- ===== Buy Me a Coffee Trigger ===== -->
