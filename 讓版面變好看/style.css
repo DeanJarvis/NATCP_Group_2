@@ -299,8 +299,26 @@ body.theme-dark .result-card[data-background="sunset"] #result-title { color: #b
 .card-bg-menu { position: absolute; z-index: 5; top: calc(100% + 7px); left: 50%; transform: translateX(-50%); display: flex; gap: 6px; padding: 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; box-shadow: 0 10px 30px rgba(36,30,53,.15); }
 .card-bg-option { padding: 8px 11px; color: var(--night); background: transparent; border: 1px solid var(--line); border-radius: 9px; cursor: pointer; }
 .card-bg-option.is-selected { color: #fff; background: var(--violet); }
-.result-card { padding: clamp(22px, 5vw, 42px); overflow: hidden; border: 1px solid rgba(255,255,255,.45); border-radius: 25px; box-shadow: 0 20px 55px rgba(46,38,69,.13); transition: background .25s, color .25s; }
+.result-card { position: relative; padding: clamp(22px, 5vw, 42px); overflow: hidden; border: 1px solid rgba(255,255,255,.45); border-radius: 25px; box-shadow: 0 20px 55px rgba(46,38,69,.13); transition: background .25s, color .25s; }
 .result-card[data-background="starlight"] { background: radial-gradient(circle at 15% 10%, rgba(211,198,239,.72), transparent 32%), linear-gradient(145deg, #fffcf5, #f3edf9); }
+.result-card[data-background="starlight"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 82% 13%, rgba(255,252,232,.95) 0%, rgba(255,252,232,.95) 16%, rgba(255,252,232,.3) 22%, transparent 42%),
+    radial-gradient(2.6px 2.6px at 22% 22%, rgba(90,68,140,1), transparent 65%),
+    radial-gradient(2.2px 2.2px at 38% 42%, rgba(90,68,140,.95), transparent 65%),
+    radial-gradient(2.8px 2.8px at 60% 18%, rgba(90,68,140,1), transparent 65%),
+    radial-gradient(2.2px 2.2px at 14% 55%, rgba(90,68,140,.9), transparent 65%),
+    radial-gradient(2.6px 2.6px at 68% 60%, rgba(90,68,140,.95), transparent 65%),
+    radial-gradient(2px 2px at 48% 30%, rgba(90,68,140,.85), transparent 65%),
+    radial-gradient(2px 2px at 30% 70%, rgba(90,68,140,.85), transparent 65%),
+    radial-gradient(2.4px 2.4px at 75% 45%, rgba(90,68,140,.9), transparent 65%);
+}
+.result-card[data-background="starlight"] > * { position: relative; z-index: 1; }
 .result-card[data-background="sunset"] { background: radial-gradient(circle at 88% 8%, rgba(240,170,90,.85), transparent 32%), linear-gradient(145deg, #f7ddb0, #e8a58f 58%, #a887c9); }
 .result-card[data-background="midnight"] { --night: #f6f0ff; --muted: #c8bfd8; --paper: rgba(43,36,66,.72); --line: rgba(229,215,255,.2); color: var(--night); background: radial-gradient(circle at 20% 12%, rgba(129,100,190,.55), transparent 30%), linear-gradient(150deg, #181526, #312643); }
 .card-date { margin: 0 0 16px; color: var(--muted); font-size: .75rem; letter-spacing: .08em; }
