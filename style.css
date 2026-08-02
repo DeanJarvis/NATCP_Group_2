@@ -111,6 +111,7 @@ textarea::placeholder { color: #a7a1ae; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
 
 .question-enter { animation: question-in .22s ease-out; }
+.question-exit { opacity: 0; transform: translateX(-8px); transition: opacity .14s ease-in, transform .14s ease-in; }
 @keyframes question-in { from { opacity: .2; transform: translateX(8px); } to { opacity: 1; transform: none; } }
 .loading-screen { margin-top: 18vh; text-align: center; }
 .stars-loader { display: flex; justify-content: center; gap: 14px; color: var(--violet); font-size: 1.25rem; }
@@ -287,7 +288,8 @@ body.theme-dark .zodiac-wheel-container { box-shadow: 0 18px 50px rgba(0,0,0,.28
 .card-bg-menu { position: absolute; z-index: 5; top: calc(100% + 7px); right: 0; display: flex; gap: 6px; padding: 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; box-shadow: 0 10px 30px rgba(36,30,53,.15); }
 .card-bg-option { padding: 8px 11px; color: var(--night); background: transparent; border: 1px solid var(--line); border-radius: 9px; cursor: pointer; }
 .card-bg-option.is-selected { color: #fff; background: var(--violet); }
-.result-card { padding: clamp(22px, 5vw, 42px); overflow: hidden; border: 1px solid rgba(255,255,255,.45); border-radius: 25px; box-shadow: 0 20px 55px rgba(46,38,69,.13); transition: background .25s, color .25s; }
+.result-card { padding: clamp(22px, 5vw, 42px); overflow: hidden; border: 1px solid rgba(255,255,255,.45); border-radius: 25px; box-shadow: 0 20px 55px rgba(46,38,69,.13); animation: result-unfold .42s ease-out; transition: background .25s, color .25s; }
+@keyframes result-unfold { from { opacity: 0; transform: translateY(14px) scale(.99); } to { opacity: 1; transform: none; } }
 .result-card[data-background="starlight"] { background: radial-gradient(circle at 15% 10%, rgba(211,198,239,.72), transparent 32%), linear-gradient(145deg, #fffcf5, #f3edf9); }
 .result-card[data-background="sunset"] { background: radial-gradient(circle at 88% 8%, rgba(255,220,173,.8), transparent 32%), linear-gradient(145deg, #fff8ec, #f6d9d4 58%, #ded5f2); }
 .result-card[data-background="midnight"] { --night: #f6f0ff; --muted: #c8bfd8; --paper: rgba(43,36,66,.72); --line: rgba(229,215,255,.2); color: var(--night); background: radial-gradient(circle at 20% 12%, rgba(129,100,190,.55), transparent 30%), linear-gradient(150deg, #181526, #312643); }

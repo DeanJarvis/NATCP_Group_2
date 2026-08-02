@@ -11,21 +11,24 @@ const questions = [
   { key: "energy", title: "今天的能量，更像哪一種光？", hint: "選出最接近身體感受的一項。", answers: ["明亮而流動，想把握當下", "柔和而緩慢，需要好好充電"] }
 ];
 
-const fortunes = ["大凶", "凶", "小凶", "末吉", "吉", "小吉", "中吉", "大吉"];
+const fortuneWeights = [
+  ["大凶", 3], ["凶", 10], ["末吉", 17], ["吉", 28],
+  ["小吉", 20], ["中吉", 15], ["大吉", 7]
+];
 const fragments = {
   opening: {
-    "牡羊座": "勇敢的牡羊，今天的星光提醒你，速度之外也藏著細微的答案。",
-    "金牛座": "沉穩的金牛，今天值得相信那些讓你感到踏實的選擇。",
-    "雙子座": "靈巧的雙子，散落的念頭正在悄悄連成一條路。",
-    "巨蟹座": "溫柔的巨蟹，你細膩的感受並不是負擔，而是方向。",
-    "獅子座": "閃耀的獅子，今天不必用力證明，真誠本身就有光。",
-    "處女座": "細心的處女，允許今天留下一點不完美的空白。",
-    "天秤座": "優雅的天秤，真正的平衡也包含對自己的偏愛。",
-    "天蠍座": "深刻的天蠍，你已看見表面之下真正重要的事。",
-    "射手座": "自由的射手，今天的遠方也可以是一個嶄新的念頭。",
-    "摩羯座": "堅定的摩羯，你累積的每一步都比想像中更有重量。",
-    "水瓶座": "獨特的水瓶，別急著讓所有人理解你的節奏。",
-    "雙魚座": "浪漫的雙魚，你的直覺正輕輕指向需要被照顧的地方。"
+    "牡羊座": ["牡羊座的你，今天的星光提醒你，速度之外也藏著細微的答案。", "牡羊座的你，今天適合把勇氣放在真正重要的一步上。"],
+    "金牛座": ["金牛座的你，今天值得相信那些讓你感到踏實的選擇。", "金牛座的你，穩穩前進也能抵達想去的地方。"],
+    "雙子座": ["雙子座的你，散落的念頭正在悄悄連成一條路。", "雙子座的你，今天的好奇心會替你打開新的角度。"],
+    "巨蟹座": ["巨蟹座的你，細膩的感受並不是負擔，而是方向。", "巨蟹座的你，先照顧心裡的需要，再回應外面的聲音。"],
+    "獅子座": ["獅子座的你，今天不必用力證明，真誠本身就有光。", "獅子座的你，溫柔地相信自己，也能照亮身邊的人。"],
+    "處女座": ["處女座的你，允許今天留下一點不完美的空白。", "處女座的你，整理好最重要的一件事就已經足夠。"],
+    "天秤座": ["天秤座的你，真正的平衡也包含對自己的偏愛。", "天秤座的你，今天可以先聽見自己，再照顧每個人的期待。"],
+    "天蠍座": ["天蠍座的你，已看見表面之下真正重要的事。", "天蠍座的你，相信深處的直覺，但不必急著說出答案。"],
+    "射手座": ["射手座的你，今天的遠方也可以是一個嶄新的念頭。", "射手座的你，把自由留給探索，也替自己留一個落腳處。"],
+    "摩羯座": ["摩羯座的你，累積的每一步都比想像中更有重量。", "摩羯座的你，今天的穩定會讓長期努力慢慢發光。"],
+    "水瓶座": ["水瓶座的你，別急著讓所有人理解你的節奏。", "水瓶座的你，獨特的想法值得先被自己好好接住。"],
+    "雙魚座": ["雙魚座的你，直覺正輕輕指向需要被照顧的地方。", "雙魚座的你，柔軟不是脆弱，而是今天理解世界的方法。"]
   },
   social: ["今天適合把心裡的話交給值得信任的人，一次真誠的靠近會帶來回音。", "保留一點安靜不是退縮；先照顧好內在，關係自然會找到舒服的距離。"],
   decision: ["想做的事可以先從最小的一步開始，行動會替你照亮下一段路。", "暫時不決定也是一種決定，讓資訊沉澱後，你會更清楚真正想守住什麼。"],
@@ -33,7 +36,6 @@ const fragments = {
   fortune: {
     "大凶": "籤運雖低，卻適合避開勉強與衝動；今天以守代攻，就是最好的轉運。",
     "凶": "遇到阻力時先停一下，少做一個倉促決定，就多保留一份餘裕。",
-    "小凶": "小小的不順只是提醒，調整順序後仍能安穩前進。",
     "末吉": "好事正在路上但尚未抵達，今天適合耐心完成眼前的小事。",
     "吉": "穩定的好運陪著你，真誠回應眼前的人與事即可。",
     "小吉": "一個微小的驚喜可能出現，記得為偶然留一點空間。",
@@ -43,7 +45,7 @@ const fragments = {
   closing: "不必一次想清所有答案。今天，只要忠於此刻的自己，就已經足夠。"
 };
 
-const freshState = () => ({ zodiac: null, answers: Array(3).fill(null), questionIndex: 0, mood: "", fortune: null, letter: "", generating: false });
+const freshState = () => ({ zodiac: null, answers: Array(3).fill(null), questionIndex: 0, mood: "", fortune: null, letter: "", generating: false, transitioning: false });
 let state = freshState();
 const $ = (selector) => document.querySelector(selector);
 const screens = [...document.querySelectorAll(".screen")];
@@ -107,9 +109,38 @@ function renderQuestion() {
   }));
 }
 
+function pickRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function changeQuestion(nextIndex) {
+  if (state.transitioning) return;
+  state.transitioning = true;
+  const panel = $("#question-panel");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  panel.classList.add("question-exit");
+  window.setTimeout(() => {
+    state.questionIndex = nextIndex;
+    panel.classList.remove("question-exit");
+    renderQuestion();
+    state.transitioning = false;
+  }, reducedMotion ? 0 : 140);
+}
+
+function drawFortune() {
+  const roll = Math.random() * fortuneWeights.reduce((sum, [, weight]) => sum + weight, 0);
+  let cursor = 0;
+  for (const [fortune, weight] of fortuneWeights) {
+    cursor += weight;
+    if (roll < cursor) return fortune;
+  }
+  return "吉";
+}
+
 function generateLetter() {
   const safe = (value, fallback) => value ?? fallback;
-  return [safe(fragments.opening[state.zodiac], "今天的星光正安靜地陪著你。"), safe(fragments.social[state.answers[0]], "照顧好自己的界線。"), safe(fragments.decision[state.answers[1]], "相信你會找到適合的步調。"), safe(fragments.energy[state.answers[2]], "把能量留給重要的事。"), safe(fragments.fortune[state.fortune], "讓今天自然展開。"), fragments.closing].join("\n\n");
+  const openings = fragments.opening[state.zodiac];
+  return [Array.isArray(openings) ? pickRandom(openings) : "今天的星光正安靜地陪著你。", safe(fragments.social[state.answers[0]], "照顧好自己的界線。"), safe(fragments.decision[state.answers[1]], "相信你會找到適合的步調。"), safe(fragments.energy[state.answers[2]], "把能量留給重要的事。"), safe(fragments.fortune[state.fortune], "讓今天自然展開。"), fragments.closing].join("\n\n");
 }
 
 function renderResult() {
@@ -158,7 +189,7 @@ async function submitMood() {
   state.generating = true;
   $("#mood-submit").disabled = true;
   state.mood = $("#mood-input").value;
-  state.fortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+  state.fortune = drawFortune();
   state.letter = generateLetter();
   showScreen("loading-screen");
   $("#generation-source").textContent = "";
@@ -267,8 +298,8 @@ $("#start-button").addEventListener("click", () => showScreen("zodiac-screen"));
 $("#zodiac-grid").addEventListener("click", (event) => { const button = event.target.closest(".zodiac-option"); if (button) selectZodiac(button); });
 $("#zodiac-next").addEventListener("click", () => { if (!state.zodiac) return; state.questionIndex = 0; renderQuestion(); showScreen("quiz-screen"); });
 $("#answer-list").addEventListener("click", (event) => { const button = event.target.closest(".answer-option"); if (!button) return; state.answers[state.questionIndex] = Number(button.dataset.index); renderQuestion(); });
-$("#quiz-next").addEventListener("click", () => { if (state.answers[state.questionIndex] === null) return; if (state.questionIndex < 2) { state.questionIndex += 1; renderQuestion(); } else { $("#mood-input").value = state.mood; showScreen("mood-screen"); } });
-$("#quiz-back").addEventListener("click", () => { if (state.questionIndex === 0) showScreen("zodiac-screen"); else { state.questionIndex -= 1; renderQuestion(); } });
+$("#quiz-next").addEventListener("click", () => { if (state.transitioning || state.answers[state.questionIndex] === null) return; if (state.questionIndex < 2) changeQuestion(state.questionIndex + 1); else { $("#mood-input").value = state.mood; showScreen("mood-screen"); } });
+$("#quiz-back").addEventListener("click", () => { if (state.transitioning) return; if (state.questionIndex === 0) showScreen("zodiac-screen"); else changeQuestion(state.questionIndex - 1); });
 $("#mood-input").addEventListener("input", (event) => { state.mood = event.target.value; $("#char-count").textContent = String(event.target.value.length); });
 $("#mood-back").addEventListener("click", () => { if (state.generating) return; state.questionIndex = 2; renderQuestion(); showScreen("quiz-screen"); });
 $("#mood-submit").addEventListener("click", submitMood);

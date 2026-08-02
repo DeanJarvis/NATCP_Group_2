@@ -1,5 +1,5 @@
 const ALLOWED_ZODIACS = new Set(["牡羊座", "金牛座", "雙子座", "巨蟹座", "獅子座", "處女座", "天秤座", "天蠍座", "射手座", "摩羯座", "水瓶座", "雙魚座"]);
-const ALLOWED_FORTUNES = new Set(["大凶", "凶", "小凶", "末吉", "吉", "小吉", "中吉", "大吉"]);
+const ALLOWED_FORTUNES = new Set(["大凶", "凶", "末吉", "吉", "小吉", "中吉", "大吉"]);
 const ANSWER_KEYS = ["social", "decision", "energy"];
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
