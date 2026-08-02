@@ -66,6 +66,7 @@ function buildZodiacGrid() {
     button.dataset.name = name;
     button.style.setProperty("--zodiac-angle", `${index * 30}deg`);
     button.innerHTML = `<span class="symbol" aria-hidden="true">${symbol}</span>${name}<small>${date}</small>`;
+    button.addEventListener("click", () => selectZodiac(button));
     return button;
   }));
 }
@@ -263,15 +264,32 @@ async function saveResultImage() {
   button.disabled = true;
   $("#share-status").textContent = "正在製作圖片…";
   try {
-    const canvas = await window.html2canvas($("#result-card"), { scale: 2, backgroundColor: null, useCORS: true });
+    const resultCard = $("#result-card");
+    if (document.fonts?.ready) await document.fonts.ready;
+    const canvas = await window.html2canvas(resultCard, {
+      scale: 2,
+      backgroundColor: null,
+      useCORS: true,
+      logging: false,
+      width: resultCard.scrollWidth,
+      height: resultCard.scrollHeight,
+      windowWidth: Math.max(document.documentElement.clientWidth, resultCard.scrollWidth),
+      windowHeight: Math.max(document.documentElement.clientHeight, resultCard.scrollHeight),
+      onclone(clonedDocument) {
+        clonedDocument.body.classList.remove("theme-fade");
+        clonedDocument.querySelector("#result-card")?.classList.add("export-capture");
+      }
+    });
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
     if (!blob) throw new Error("image failed");
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.download = `HoroscopeToday-${new Date().toISOString().slice(0, 10)}.png`;
+    document.body.append(link);
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     $("#share-status").textContent = "今日星語圖片已儲存。";
   } catch {
     $("#share-status").textContent = "圖片儲存失敗，請稍後再試。";
@@ -295,7 +313,6 @@ function resetApp() {
 }
 
 $("#start-button").addEventListener("click", () => showScreen("zodiac-screen"));
-$("#zodiac-grid").addEventListener("click", (event) => { const button = event.target.closest(".zodiac-option"); if (button) selectZodiac(button); });
 $("#zodiac-next").addEventListener("click", () => { if (!state.zodiac) return; state.questionIndex = 0; renderQuestion(); showScreen("quiz-screen"); });
 $("#answer-list").addEventListener("click", (event) => { const button = event.target.closest(".answer-option"); if (!button) return; state.answers[state.questionIndex] = Number(button.dataset.index); renderQuestion(); });
 $("#quiz-next").addEventListener("click", () => { if (state.transitioning || state.answers[state.questionIndex] === null) return; if (state.questionIndex < 2) changeQuestion(state.questionIndex + 1); else { $("#mood-input").value = state.mood; showScreen("mood-screen"); } });
@@ -567,5 +584,17 @@ try { savedTheme = localStorage.getItem("horoscope-theme") || "light"; } catch {
 applyTheme(savedTheme === "dark" ? "dark" : "light");
 
 $("#theme-toggle").addEventListener("click", () => {
-  applyTheme(document.body.classList.contains("theme-dark") ? "light" : "dark");
+  const nextTheme = document.body.classList.contains("theme-dark") ? "light" : "dark";
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reducedMotion && typeof document.startViewTransition === "function") {
+    document.startViewTransition(() => applyTheme(nextTheme));
+    return;
+  }
+  applyTheme(nextTheme);
+  if (!reducedMotion) {
+    document.body.classList.remove("theme-fade");
+    void document.body.offsetWidth;
+    document.body.classList.add("theme-fade");
+    window.setTimeout(() => document.body.classList.remove("theme-fade"), 420);
+  }
 });

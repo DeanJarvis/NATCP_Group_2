@@ -290,10 +290,34 @@ body.theme-dark .zodiac-wheel-container { box-shadow: 0 18px 50px rgba(0,0,0,.28
 .card-bg-option.is-selected { color: #fff; background: var(--violet); }
 .result-card { padding: clamp(22px, 5vw, 42px); overflow: hidden; border: 1px solid rgba(255,255,255,.45); border-radius: 25px; box-shadow: 0 20px 55px rgba(46,38,69,.13); animation: result-unfold .42s ease-out; transition: background .25s, color .25s; }
 @keyframes result-unfold { from { opacity: 0; transform: translateY(14px) scale(.99); } to { opacity: 1; transform: none; } }
+.result-card[data-background="starlight"],
+.result-card[data-background="sunset"] {
+  --night: #202337;
+  --muted: #77778a;
+  --paper: rgba(255,253,248,.92);
+  --violet: #7668a6;
+  --violet-dark: #5e508e;
+  --line: #ded8e7;
+  color: var(--night);
+}
 .result-card[data-background="starlight"] { background: radial-gradient(circle at 15% 10%, rgba(211,198,239,.72), transparent 32%), linear-gradient(145deg, #fffcf5, #f3edf9); }
 .result-card[data-background="sunset"] { background: radial-gradient(circle at 88% 8%, rgba(255,220,173,.8), transparent 32%), linear-gradient(145deg, #fff8ec, #f6d9d4 58%, #ded5f2); }
+.result-card[data-background="starlight"] #result-title,
+.result-card[data-background="sunset"] #result-title { color: #202337; }
+.result-card[data-background="starlight"] .fortune,
+.result-card[data-background="sunset"] .fortune { color: var(--violet-dark); }
+.result-card[data-background="starlight"] .letter,
+.result-card[data-background="starlight"] .mood-echo,
+.result-card[data-background="sunset"] .letter,
+.result-card[data-background="sunset"] .mood-echo { color: var(--night); background: var(--paper); border-color: var(--line); }
 .result-card[data-background="midnight"] { --night: #f6f0ff; --muted: #c8bfd8; --paper: rgba(43,36,66,.72); --line: rgba(229,215,255,.2); color: var(--night); background: radial-gradient(circle at 20% 12%, rgba(129,100,190,.55), transparent 30%), linear-gradient(150deg, #181526, #312643); }
+.result-card[data-background="midnight"] #result-title,
+.result-card[data-background="midnight"] .fortune { color: #fff; }
 .result-card[data-background="midnight"] .letter, .result-card[data-background="midnight"] .mood-echo { background: var(--paper); border-color: var(--line); }
+.result-card.export-capture { opacity: 1 !important; animation: none !important; transition: none !important; box-shadow: none; }
+.result-card.export-capture[data-background="starlight"] { background: linear-gradient(145deg, #fffcf5, #f3edf9); }
+.result-card.export-capture[data-background="sunset"] { background: linear-gradient(145deg, #fff8ec, #f6d9d4 58%, #ded5f2); }
+.result-card.export-capture[data-background="midnight"] { background: linear-gradient(150deg, #181526, #312643); }
 .card-date { margin: 0 0 16px; color: var(--muted); font-size: .75rem; letter-spacing: .08em; }
 .card-sign { margin: 22px 0 0; color: var(--violet); font-family: Georgia, serif; text-align: right; }
 .share-menu-wrap { position: relative; }
