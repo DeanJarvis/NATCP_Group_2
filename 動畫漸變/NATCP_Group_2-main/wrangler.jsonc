@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "horoscope-today",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-02",
+  "secrets": {
+    "required": ["OPENROUTER_API_KEY"]
+  },
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  }
+}
+
