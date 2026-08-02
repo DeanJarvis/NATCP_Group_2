@@ -307,11 +307,17 @@ $("#restart-button").addEventListener("click", resetApp);
 buildZodiacGrid();
 $("#date-display").textContent = formatToday();
 
+/* ---------- Donate modal (amount + name) ---------- */
+
 const donateModal = $("#donate-modal");
 const donateFormStep = $("#donate-form-step");
+const donateCardStep = $("#donate-card-step");
 const donateSuccessStep = $("#donate-success-step");
 const amountButtons = [...document.querySelectorAll(".amount-button")];
+const donateStepDots = [...document.querySelectorAll(".donate-step-dot")];
 let selectedDonateAmount = null;
+let pendingDonation = null; // { name, amount, message }
+let paying = false;
 
 function setDonateModal(open) {
   donateModal.hidden = !open;
@@ -319,16 +325,29 @@ function setDonateModal(open) {
   if (open) $("#close-donate").focus();
 }
 
+function setDonateStep(stepNumber) {
+  donateStepDots.forEach((dot) => dot.classList.toggle("is-active", Number(dot.dataset.step) <= stepNumber));
+}
+
 function resetDonateDemo() {
   $("#donate-form").reset();
+  $("#card-form").reset();
   selectedDonateAmount = null;
+  pendingDonation = null;
+  paying = false;
   amountButtons.forEach((button) => {
     button.classList.remove("is-selected");
     button.setAttribute("aria-pressed", "false");
   });
   $("#donate-error").textContent = "";
+  $("#card-error").textContent = "";
+  $("#pay-now-button").classList.remove("is-loading");
+  $("#pay-now-button").disabled = false;
   donateFormStep.hidden = false;
+  donateCardStep.hidden = true;
   donateSuccessStep.hidden = true;
+  setDonateStep(1);
+  updateCardPreview();
 }
 
 function fireConfetti() {
@@ -380,13 +399,128 @@ $("#donate-form").addEventListener("submit", (event) => {
     $("#donate-error").textContent = "請填寫名字，並選擇有效的贊助金額。";
     return;
   }
-  $("#success-name").textContent = name;
-  $("#success-amount").textContent = `NT$${amount.toLocaleString("zh-TW")}`;
+  $("#donate-error").textContent = "";
+  pendingDonation = { name, amount, message: $("#donate-message").value.trim() };
+
+  // Move to the mock card payment step.
+  $("#card-name").value = name;
   donateFormStep.hidden = true;
+  donateCardStep.hidden = false;
+  setDonateStep(2);
+  updateCardPreview();
+  window.setTimeout(() => $("#card-number").focus(), 50);
+});
+
+/* ---------- Mock credit card payment ---------- */
+
+function detectCardBrand(digits) {
+  if (/^4/.test(digits)) return "VISA";
+  if (/^(5[1-5]|2[2-7])/.test(digits)) return "Mastercard";
+  if (/^3[47]/.test(digits)) return "AMEX";
+  if (/^6(011|5)/.test(digits)) return "Discover";
+  return "CARD";
+}
+
+function formatCardNumber(value) {
+  const digits = value.replace(/\D/g, "").slice(0, 16);
+  return digits.replace(/(.{4})/g, "$1 ").trim();
+}
+
+function formatExpiry(value) {
+  const digits = value.replace(/\D/g, "").slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+}
+
+function formatCvc(value) {
+  return value.replace(/\D/g, "").slice(0, 4);
+}
+
+function updateCardPreview() {
+  const digits = $("#card-number").value.replace(/\D/g, "");
+  const groups = digits.padEnd(16, "•").match(/.{1,4}/g) || ["••••", "••••", "••••", "••••"];
+  const maskedGroups = groups.map((group, index) => {
+    const typedInGroup = digits.slice(index * 4, index * 4 + 4);
+    return typedInGroup.length === 4 ? typedInGroup : (typedInGroup + "•".repeat(4 - typedInGroup.length));
+  });
+  $("#cc-number-display").textContent = maskedGroups.join(" ");
+  $("#cc-brand").textContent = digits ? detectCardBrand(digits) : "CARD";
+
+  const name = $("#card-name").value.trim();
+  $("#cc-name-display").textContent = name ? name.toUpperCase() : "YOUR NAME";
+
+  const expiry = $("#card-expiry").value.trim();
+  $("#cc-expiry-display").textContent = expiry || "MM/YY";
+}
+
+function isExpiryValid(value) {
+  const match = /^(\d{2})\/(\d{2})$/.exec(value);
+  if (!match) return false;
+  const month = Number(match[1]);
+  if (month < 1 || month > 12) return false;
+  const year = 2000 + Number(match[2]);
+  const now = new Date();
+  const expiryDate = new Date(year, month, 0, 23, 59, 59);
+  return expiryDate >= new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+$("#card-number").addEventListener("input", (event) => {
+  event.target.value = formatCardNumber(event.target.value);
+  updateCardPreview();
+});
+$("#card-name").addEventListener("input", updateCardPreview);
+$("#card-expiry").addEventListener("input", (event) => {
+  event.target.value = formatExpiry(event.target.value);
+  updateCardPreview();
+});
+$("#card-cvc").addEventListener("input", (event) => {
+  event.target.value = formatCvc(event.target.value);
+});
+
+$("#card-back").addEventListener("click", () => {
+  if (paying) return;
+  donateCardStep.hidden = true;
+  donateFormStep.hidden = false;
+  setDonateStep(1);
+});
+
+$("#card-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (paying || !pendingDonation) return;
+
+  const cardDigits = $("#card-number").value.replace(/\D/g, "");
+  const name = $("#card-name").value.trim();
+  const expiry = $("#card-expiry").value.trim();
+  const cvc = $("#card-cvc").value.trim();
+
+  if (cardDigits.length !== 16 || !name || !isExpiryValid(expiry) || cvc.length < 3) {
+    $("#card-error").textContent = "請確認卡號、姓名、有效期限與安全碼皆正確填寫。";
+    return;
+  }
+  $("#card-error").textContent = "";
+
+  paying = true;
+  const payButton = $("#pay-now-button");
+  payButton.disabled = true;
+  payButton.classList.add("is-loading");
+
+  // Mock payment processing delay.
+  await new Promise((resolve) => window.setTimeout(resolve, 1500));
+
+  payButton.classList.remove("is-loading");
+  payButton.disabled = false;
+  paying = false;
+
+  $("#success-name").textContent = pendingDonation.name;
+  $("#success-amount").textContent = `NT$${pendingDonation.amount.toLocaleString("zh-TW")}`;
+  donateCardStep.hidden = true;
   donateSuccessStep.hidden = false;
+  setDonateStep(3);
   $("#finish-donate").focus();
   fireConfetti();
 });
+
+/* ---------- Theme ---------- */
 
 function applyTheme(theme) {
   const isDark = theme === "dark";

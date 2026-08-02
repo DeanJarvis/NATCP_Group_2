@@ -85,6 +85,17 @@
   <div id="donate-modal" class="modal-overlay" hidden>
     <section class="donate-card" role="dialog" aria-modal="true" aria-labelledby="donate-title">
       <button class="modal-close" id="close-donate" type="button" aria-label="關閉贊助視窗">×</button>
+
+      <!-- Step indicator -->
+      <div class="donate-steps" id="donate-steps" data-html2canvas-ignore="true">
+        <span class="donate-step-dot is-active" data-step="1"></span>
+        <span class="donate-step-line"></span>
+        <span class="donate-step-dot" data-step="2"></span>
+        <span class="donate-step-line"></span>
+        <span class="donate-step-dot" data-step="3"></span>
+      </div>
+
+      <!-- Step 1: amount + name -->
       <div id="donate-form-step">
         <div class="modal-header"><span aria-hidden="true">☕</span><h2 id="donate-title">支持 HoroscopeToday</h2><p>你的鼓勵，讓今天的星光繼續閃耀。</p></div>
         <p class="demo-notice">展示功能，不會真的扣款，也不會儲存資料。</p>
@@ -93,15 +104,59 @@
           <fieldset><legend>贊助金額</legend><div class="amount-options"><button type="button" class="amount-button" data-amount="50">NT$50</button><button type="button" class="amount-button" data-amount="100">NT$100</button><button type="button" class="amount-button" data-amount="500">NT$500</button></div><label class="custom-amount">或自訂金額<input type="number" id="custom-amount" min="1" max="100000" placeholder="輸入金額"></label></fieldset>
           <label>留下一句祝福<textarea id="donate-message" maxlength="200" rows="3" placeholder="想對團隊說的話……"></textarea></label>
           <p class="donate-error" id="donate-error" role="alert"></p>
-          <button class="primary-button donate-submit" type="submit">確認 Demo 贊助 ✦</button>
+          <button class="primary-button donate-submit" type="submit">前往付款 <span>→</span></button>
         </form>
       </div>
+
+      <!-- Step 2: mock credit card payment -->
+      <div id="donate-card-step" hidden>
+        <div class="modal-header modal-header-tight"><h2 id="card-step-title">輸入付款資訊</h2><p>這是模擬付款畫面，僅供展示。</p></div>
+
+        <div class="credit-card-preview" id="credit-card-preview" aria-hidden="true">
+          <div class="cc-face">
+            <div class="cc-top-row">
+              <span class="cc-chip"></span>
+              <span class="cc-brand" id="cc-brand">CARD</span>
+            </div>
+            <p class="cc-number" id="cc-number-display">•••• •••• •••• ••••</p>
+            <div class="cc-bottom-row">
+              <div class="cc-name-block">
+                <span class="cc-field-label">持卡人</span>
+                <p class="cc-name" id="cc-name-display">YOUR NAME</p>
+              </div>
+              <div class="cc-expiry-block">
+                <span class="cc-field-label">有效期限</span>
+                <p class="cc-expiry" id="cc-expiry-display">MM/YY</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <form id="card-form" class="donate-form" novalidate>
+          <label>卡號<input type="text" id="card-number" inputmode="numeric" autocomplete="cc-number" placeholder="4532 1234 5678 9010" maxlength="19" required></label>
+          <label>持卡人姓名<input type="text" id="card-name" autocomplete="cc-name" maxlength="40" placeholder="卡片上的姓名" required></label>
+          <div class="donate-form-row">
+            <label>有效期限 (MM/YY)<input type="text" id="card-expiry" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/YY" maxlength="5" required></label>
+            <label>安全碼<input type="text" id="card-cvc" inputmode="numeric" autocomplete="cc-csc" placeholder="CVC" maxlength="4" required></label>
+          </div>
+          <p class="donate-error" id="card-error" role="alert"></p>
+          <div class="donate-form-actions">
+            <button type="button" class="text-button" id="card-back">← 返回</button>
+            <button class="primary-button donate-submit" type="submit" id="pay-now-button">
+              <span class="pay-button-label">付款 ✦</span>
+              <span class="pay-button-spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Step 3: success -->
       <div id="donate-success-step" class="donate-success" hidden>
         <canvas id="confetti-canvas" aria-hidden="true"></canvas>
         <span class="success-mark" aria-hidden="true">✓</span>
         <h2>謝謝你的支持！</h2>
         <p><strong id="success-name"></strong>，你送出的 <strong id="success-amount"></strong> Demo 鼓勵已照亮今天的星空。</p>
-        <p class="demo-notice">這是展示結果，沒有發生實際交易。</p>
+        <p class="demo-notice">這是 Demo 展示結果，並未實際扣款，也沒有發生任何真實交易。</p>
         <button id="finish-donate" class="primary-button" type="button">完成</button>
       </div>
     </section>
