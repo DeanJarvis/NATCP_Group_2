@@ -1,0 +1,12 @@
+.env*
+.dev.vars*
+.git/
+.github/
+node_modules/
+.wrangler/
+AGENTS.md
+package*.json
+push_to_github.bat
+worker.js
+wrangler.jsonc
+

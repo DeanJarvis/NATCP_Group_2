@@ -111,7 +111,6 @@ textarea::placeholder { color: #a7a1ae; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
 
 .question-enter { animation: question-in .22s ease-out; }
-.question-exit { opacity: 0; transform: translateX(-8px); transition: opacity .14s ease-in, transform .14s ease-in; }
 @keyframes question-in { from { opacity: .2; transform: translateX(8px); } to { opacity: 1; transform: none; } }
 .loading-screen { margin-top: 18vh; text-align: center; }
 .stars-loader { display: flex; justify-content: center; gap: 14px; color: var(--violet); font-size: 1.25rem; }
@@ -176,6 +175,53 @@ textarea::placeholder { color: #a7a1ae; }
   .amount-button { min-width: 28%; }
 }
 
+.lang-picker-wrap {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 10;
+}
+.lang-picker-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  color: var(--violet-dark);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(31, 28, 48, .16);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  font-weight: 600;
+}
+.lang-picker-toggle:hover { transform: translateY(-1px); }
+.lang-menu {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  min-width: 120px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(31, 28, 48, .16);
+}
+.lang-option {
+  padding: 8px 10px;
+  color: var(--night);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+.lang-option.is-selected {
+  color: #fff;
+  background: var(--violet);
+}
 .theme-toggle {
   position: fixed;
   right: 20px;
@@ -228,6 +274,8 @@ body.theme-dark .coffee-button { background: linear-gradient(135deg, #b16f48, va
 body.theme-dark .theme-toggle { box-shadow: 0 8px 25px rgba(0,0,0,.35); }
 
 @media (max-width: 560px) {
+  .lang-picker-wrap { left: 14px; bottom: 14px; }
+  .lang-picker-toggle { padding: 9px 12px; font-size: .92rem; }
   .theme-toggle { right: 14px; bottom: 14px; width: 46px; height: 46px; }
 }
 
@@ -288,8 +336,7 @@ body.theme-dark .zodiac-wheel-container { box-shadow: 0 18px 50px rgba(0,0,0,.28
 .card-bg-menu { position: absolute; z-index: 5; top: calc(100% + 7px); right: 0; display: flex; gap: 6px; padding: 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; box-shadow: 0 10px 30px rgba(36,30,53,.15); }
 .card-bg-option { padding: 8px 11px; color: var(--night); background: transparent; border: 1px solid var(--line); border-radius: 9px; cursor: pointer; }
 .card-bg-option.is-selected { color: #fff; background: var(--violet); }
-.result-card { padding: clamp(22px, 5vw, 42px); overflow: hidden; border: 1px solid rgba(255,255,255,.45); border-radius: 25px; box-shadow: 0 20px 55px rgba(46,38,69,.13); animation: result-unfold .42s ease-out; transition: background .25s, color .25s; }
-@keyframes result-unfold { from { opacity: 0; transform: translateY(14px) scale(.99); } to { opacity: 1; transform: none; } }
+.result-card { padding: clamp(22px, 5vw, 42px); overflow: hidden; border: 1px solid rgba(255,255,255,.45); border-radius: 25px; box-shadow: 0 20px 55px rgba(46,38,69,.13); transition: background .25s, color .25s; }
 .result-card[data-background="starlight"] { background: radial-gradient(circle at 15% 10%, rgba(211,198,239,.72), transparent 32%), linear-gradient(145deg, #fffcf5, #f3edf9); }
 .result-card[data-background="sunset"] { background: radial-gradient(circle at 88% 8%, rgba(255,220,173,.8), transparent 32%), linear-gradient(145deg, #fff8ec, #f6d9d4 58%, #ded5f2); }
 .result-card[data-background="midnight"] { --night: #f6f0ff; --muted: #c8bfd8; --paper: rgba(43,36,66,.72); --line: rgba(229,215,255,.2); color: var(--night); background: radial-gradient(circle at 20% 12%, rgba(129,100,190,.55), transparent 30%), linear-gradient(150deg, #181526, #312643); }
@@ -306,104 +353,4 @@ body.theme-dark .zodiac-wheel-container { box-shadow: 0 18px 50px rgba(0,0,0,.28
   .result-card { border-radius: 19px; }
   .result-actions { align-items: stretch; }
   .result-actions > button, .share-menu-wrap, .share-menu-wrap > button { width: 100%; }
-}
-
-/* ============================================================
-   Mock credit-card payment (donate modal, step 2)
-   ============================================================ */
-
-.donate-steps { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 6px; }
-.donate-step-dot { width: 8px; height: 8px; background: var(--line); border-radius: 50%; transition: background .25s, transform .25s; }
-.donate-step-dot.is-active { background: var(--violet); transform: scale(1.15); }
-.donate-step-line { width: 22px; height: 1px; background: var(--line); }
-
-.modal-header-tight { margin-bottom: 4px; }
-.modal-header-tight h2 { font-size: 1.5rem; margin: 6px 0 2px; }
-.modal-header-tight p { margin-bottom: 6px; }
-
-.donate-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.donate-form-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
-.donate-form-actions .donate-submit { width: auto; flex: 1; }
-
-/* --- Card preview: glassmorphism front face --- */
-.credit-card-preview {
-  perspective: 1000px;
-  width: 100%;
-  max-width: 360px;
-  margin: 18px auto 22px;
-}
-.cc-face {
-  position: relative;
-  aspect-ratio: 1.586 / 1;
-  padding: clamp(16px, 4.5vw, 24px);
-  overflow: hidden;
-  color: #fff;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(255,255,255,.35), transparent 40%),
-    radial-gradient(circle at 92% 90%, rgba(255,255,255,.16), transparent 45%),
-    linear-gradient(135deg, rgba(118,104,166,.92), rgba(94,80,142,.88) 45%, rgba(60,49,97,.92));
-  border: 1px solid rgba(255,255,255,.35);
-  border-radius: 18px;
-  box-shadow: 0 18px 44px rgba(43,35,70,.32), inset 0 1px 0 rgba(255,255,255,.25);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  animation: card-appear .3s ease-out;
-}
-.cc-face::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent 40%, rgba(255,255,255,.14) 50%, transparent 60%);
-  pointer-events: none;
-}
-.cc-top-row { display: flex; align-items: flex-start; justify-content: space-between; }
-.cc-chip {
-  display: block;
-  width: 38px;
-  height: 28px;
-  background: linear-gradient(155deg, #f0d9a6, #cda45f);
-  border-radius: 6px;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.4);
-}
-.cc-brand { font-family: Georgia, "Noto Serif TC", serif; font-weight: 700; font-size: .95rem; letter-spacing: .06em; opacity: .95; }
-.cc-number {
-  margin: 10px 0 0;
-  color: #fff;
-  font-family: "Courier New", ui-monospace, monospace;
-  font-size: clamp(1.05rem, 5vw, 1.35rem);
-  font-weight: 600;
-  letter-spacing: .07em;
-  text-shadow: 0 1px 6px rgba(0,0,0,.15);
-}
-.cc-bottom-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.cc-field-label { display: block; color: rgba(255,255,255,.7); font-size: .58rem; letter-spacing: .1em; }
-.cc-name, .cc-expiry { margin: 3px 0 0; font-size: .88rem; font-weight: 600; letter-spacing: .03em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cc-name-block { min-width: 0; max-width: 65%; }
-.cc-expiry-block { text-align: right; flex: 0 0 auto; }
-
-@keyframes card-appear { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
-
-/* --- Pay Now button loading state --- */
-.pay-button-spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; }
-#pay-now-button.is-loading { display: flex; align-items: center; justify-content: center; gap: 9px; cursor: progress; opacity: .85; }
-#pay-now-button.is-loading .pay-button-label { opacity: .85; }
-#pay-now-button.is-loading .pay-button-spinner { display: block; animation: spin .7s linear infinite; }
-#pay-now-button { display: flex; align-items: center; justify-content: center; gap: 9px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-body.theme-dark .cc-face { border-color: rgba(255,255,255,.18); box-shadow: 0 18px 44px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.12); }
-
-@media (max-width: 560px) {
-  .donate-form-row { grid-template-columns: 1fr; }
-  .donate-form-actions { flex-direction: column-reverse; align-items: stretch; }
-  .donate-form-actions .text-button { text-align: center; }
-  .credit-card-preview { max-width: 100%; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cc-face { animation: none; }
-  #pay-now-button.is-loading .pay-button-spinner { animation: none; }
 }
