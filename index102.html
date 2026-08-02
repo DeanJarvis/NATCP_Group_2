@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>傳統易經線上算卦</title>
+    <style>
+        :root {
+            --bg-color: #1c1917;
+            --card-bg: #292524;
+            --primary-color: #b45309;
+            --primary-hover: #92400e;
+            --text-color: #f5f5f4;
+            --text-muted: #a8a29e;
+            --accent-gold: #fbbf24;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 440px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border: 1px solid #44403c;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: var(--accent-gold);
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        /* 輸入框樣式 */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid #57534e;
+            background-color: #1c1917;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+            text-align: center;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent-gold);
+        }
+
+        .input-group input::placeholder {
+            color: #78716c;
+        }
+
+        /* 卦象顯示區 */
+        .hexagram-display {
+            display: flex;
+            flex-direction: column-reverse; /* 由初爻到底爻(下到上) */
+            gap: 8px;
+            height: 140px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: #1c1917;
+            border-radius: 12px;
+            border: 1px dashed #44403c;
+            padding: 10px;
+        }
+
+        .yao-line {
+            width: 160px;
+            height: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        /* 陽爻 (實線) */
+        .yang {
+            background-color: var(--accent-gold);
+            border-radius: 4px;
+            box-shadow: 0 0 6px rgba(251, 191, 36, 0.4);
+        }
+
+        /* 陰爻 (斷線) */
+        .yin-left, .yin-right {
+            width: 72px;
+            height: 14px;
+            background-color: var(--text-muted);
+            border-radius: 4px;
+        }
+
+        /* 結果顯示區 */
+        .result-box {
+            min-height: 90px;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: var(--accent-gold);
+        }
+
+        .result-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* 按鈕風格 */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 4px 12px rgba(180, 83, 9, 0.4);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            background-color: #57534e;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* 歷史紀錄 */
+        .history {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid #44403c;
+            padding-top: 15px;
+            text-align: left;
+        }
+
+        .history-list {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .history-tag {
+            background-color: #44403c;
+            color: #f5f5f4;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>易經線上算卦</h1>
+        <div class="subtitle">誠心默念您的困惑，輸入問題後開始起卦</div>
+
+        <div class="input-group">
+            <input type="text" id="questionInput" placeholder="例如：我這項投資計畫能順利獲利嗎？" autocomplete="off">
+        </div>
+
+        <div id="hexagramContainer" class="hexagram-display">
+            <span style="color: #78716c; font-size: 0.85rem;">等待起卦...</span>
+        </div>
+
+        <div class="result-box">
+            <div id="resultTitle" class="result-title">準備就緒</div>
+            <div id="resultDesc" class="result-desc">輸入問題並點擊下方按鈕，開始擲錢起卦</div>
+        </div>
+
+        <button id="tossBtn" class="btn" onclick="startDivination()">開始起卦</button>
+
+        <div class="history">
+            <div>近期占卜紀錄：</div>
+            <div id="historyList" class="history-list">
+                <span style="color: #78716c;">尚無紀錄</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 常見經典卦象庫
+        const hexagrams = [
+            { name: "乾為天 (乾卦)", meaning: "大吉大利，剛健中正。象徵天行健，君子以自強不息。目前運勢強旺，積極進取必有所成。" },
+            { name: "坤為地 (坤卦)", meaning: "厚德載物，柔順謙卑。適宜蓄積實力，配合他人或團隊行動，穩扎穩打則吉。" },
+            { name: "水雷屯 (屯卦)", meaning: "萬事開頭難，處於創業初期。雖有險阻但充滿生機，需耐心突破、不可急進。" },
+            { name: "水山蹇 (蹇卦)", meaning: "前有險陷，行步艱難。目前時機不利，宜暫緩腳步、尋求貴人協助或調整策略。" },
+            { name: "火風鼎 (鼎卦)", meaning: "除舊布新，革新轉機。象徵穩重圖新、氣象萬千，是合作與推動新計畫的好時機。" },
+            { name: "澤風大過 (大過卦)", meaning: "棟樑承壓，局勢吃緊。需承擔較大壓力，行事應當機立斷，避免過度勉強。" },
+            { name: "地水師 (師卦)", meaning: "行軍佈陣，紀律嚴明。面臨競爭或團隊考驗，需有領導統御與群策群力方能勝出。" },
+            { name: "風雷益 (益卦)", meaning: "損上益下，大有助益。有利於拓展業務、合作結盟或進行公益，收穫豐碩。" },
+            { name: "火水未濟 (未濟卦)", meaning: "事情尚未結束，仍處於過渡期。雖有挑戰但充滿希望，需謹慎行事、方能抵達彼岸。" },
+            { name: "地天泰 (泰卦)", meaning: "天地交泰，萬物通暢。諸事順遂、吉星高照，是實現目標的最佳時機。" }
+        ];
+
+        const history = [];
+
+        function startDivination() {
+            const btn = document.getElementById('tossBtn');
+            const questionInput = document.getElementById('questionInput');
+            const hexagramContainer = document.getElementById('hexagramContainer');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDesc = document.getElementById('resultDesc');
+
+            const question = questionInput.value.trim();
+            if (!question) {
+                resultTitle.textContent = "請先輸入問題";
+                resultDesc.textContent = "起卦前，請先在上方輸入框寫下您想問的事情！";
+                questionInput.focus();
+                return;
+            }
+
+            // 鎖定介面並顯示動畫中
+            btn.disabled = true;
+            questionInput.disabled = true;
+            resultTitle.textContent = "銅錢卜卦中...";
+            resultDesc.textContent = `正為您推演「${question}」，請誠心等待六爻成形...`;
+            hexagramContainer.innerHTML = `<span style="color: #fbbf24; font-size: 0.85rem; animation: pulse 1s infinite;">正在依序擲爻...</span>`;
+
+            // 模擬起卦過程 (依序產生六爻)
+            setTimeout(() => {
+                const lines = [];
+                // 產生 6 個爻 (由初爻到上爻)
+                for (let i = 0; i < 6; i++) {
+                    lines.push(Math.random() < 0.5 ? 'yin' : 'yang');
+                }
+
+                // 渲染卦象線條
+                hexagramContainer.innerHTML = '';
+                lines.forEach(type => {
+                    const lineDiv = document.createElement('div');
+                    lineDiv.className = 'yao-line';
+                    if (type === 'yang') {
+                        lineDiv.classList.add('yang');
+                    } else {
+                        const left = document.createElement('div');
+                        left.className = 'yin-left';
+                        const right = document.createElement('div');
+                        right.className = 'yin-right';
+                        lineDiv.appendChild(left);
+                        lineDiv.appendChild(right);
+                    }
+                    hexagramContainer.appendChild(lineDiv);
+                });
+
+                // 隨機抽選對應卦象
+                const selectedHex = hexagrams[Math.floor(Math.random() * hexagrams.length)];
+
+                resultTitle.textContent = `得卦：${selectedHex.name}`;
+                resultDesc.textContent = `針對「${question}」之解讀：${selectedHex.meaning}`;
+
+                updateHistory(selectedHex.name, question);
+
+                btn.disabled = false;
+                questionInput.disabled = false;
+            }, 1200);
+        }
+
+        function updateHistory(outcome, question) {
+            history.unshift({ outcome, question });
+            if (history.length > 5) history.pop();
+
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = history.map(item => 
+                `<span class="history-tag" title="問題：${item.question}">☯️ ${item.outcome}</span>`
+            ).join('');
+        }
+    </script>
+</body>
+</html>
